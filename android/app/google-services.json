@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "838300898191",
+    "project_id": "taskova-shopkeeper",
+    "storage_bucket": "taskova-shopkeeper.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:838300898191:android:b67486cba0a8e269b931fa",
+        "android_client_info": {
+          "package_name": "com.example.taskova_shopkeeper"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "838300898191-nfmtmfh88bvkc90n16e82k5akbc08nbk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.taskova_shopkeeper",
+            "certificate_hash": "08f27acfec5896b8f14b2aac3b162076828c86c9"
+          }
+        },
+        {
+          "client_id": "838300898191-9ad7sub27v72gfjbnv0d0kfeimanmfr2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8f10cmn5VE6kz8NGSedgkHwWrreNUBnw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "838300898191-9ad7sub27v72gfjbnv0d0kfeimanmfr2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
