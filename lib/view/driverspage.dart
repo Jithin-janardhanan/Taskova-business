@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-
-
 class Driver {
   final String name;
   final String phoneNumber;
@@ -63,9 +61,13 @@ class Driver {
   }
 }
 
+
+
 class DriverService {
+  
+  String? _authToken;
   static const String baseUrl = 'https://anjalitechfifo.pythonanywhere.com/api';
-  static const String token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3NDgxOTQ0LCJpYXQiOjE3NDczOTU1NDQsImp0aSI6IjQwYjkzZmI3MzIxMTRlMjZhZmZkNTgxYTY4Y2ZhZTEwIiwidXNlcl9pZCI6MTd9.Cfo7xc1SrwxWRW_pD-Xp7IiTEiuKb1ZUIkIrqGebgk4';
+  static const String token = '';
 
   static Future<List<Driver>> fetchDrivers() async {
     try {
@@ -187,11 +189,7 @@ class DriverListItem extends StatelessWidget {
   final Driver driver;
   final VoidCallback onTap;
 
-  const DriverListItem({
-    super.key,
-    required this.driver,
-    required this.onTap,
-  });
+  const DriverListItem({super.key, required this.driver, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -201,9 +199,10 @@ class DriverListItem extends StatelessWidget {
         leading: CircleAvatar(
           backgroundImage: NetworkImage(driver.profilePicture),
           onBackgroundImageError: (_, __) {},
-          child: driver.profilePicture.isEmpty
-              ? Text(driver.name.isNotEmpty ? driver.name[0] : '?')
-              : null,
+          child:
+              driver.profilePicture.isEmpty
+                  ? Text(driver.name.isNotEmpty ? driver.name[0] : '?')
+                  : null,
         ),
         title: Text(driver.name),
         subtitle: Text(driver.phoneNumber),
@@ -225,9 +224,7 @@ class DriverDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Driver Details'),
-      ),
+      appBar: AppBar(title: const Text('Driver Details')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -240,12 +237,13 @@ class DriverDetailScreen extends StatelessWidget {
                   radius: 60,
                   backgroundImage: NetworkImage(driver.profilePicture),
                   onBackgroundImageError: (_, __) {},
-                  child: driver.profilePicture.isEmpty
-                      ? Text(
-                          driver.name.isNotEmpty ? driver.name[0] : '?',
-                          style: const TextStyle(fontSize: 40),
-                        )
-                      : null,
+                  child:
+                      driver.profilePicture.isEmpty
+                          ? Text(
+                            driver.name.isNotEmpty ? driver.name[0] : '?',
+                            style: const TextStyle(fontSize: 40),
+                          )
+                          : null,
                 ),
               ),
             ),
@@ -267,18 +265,17 @@ class DriverDetailScreen extends StatelessWidget {
               _buildInfoRow(
                 'British Citizen',
                 driver.isBritishCitizen ? 'Yes' : 'No',
-                icon: driver.isBritishCitizen
-                    ? Icons.check_circle
-                    : Icons.cancel,
-                iconColor:
-                    driver.isBritishCitizen ? Colors.green : Colors.red,
+                icon:
+                    driver.isBritishCitizen ? Icons.check_circle : Icons.cancel,
+                iconColor: driver.isBritishCitizen ? Colors.green : Colors.red,
               ),
               _buildInfoRow(
                 'Criminal History',
                 driver.hasCriminalHistory ? 'Yes' : 'No',
-                icon: driver.hasCriminalHistory
-                    ? Icons.warning
-                    : Icons.check_circle,
+                icon:
+                    driver.hasCriminalHistory
+                        ? Icons.warning
+                        : Icons.check_circle,
                 iconColor:
                     driver.hasCriminalHistory ? Colors.red : Colors.green,
               ),
@@ -291,11 +288,11 @@ class DriverDetailScreen extends StatelessWidget {
               _buildInfoRow(
                 'Disability',
                 driver.hasDisability ? 'Yes' : 'No',
-                icon: driver.hasDisability
-                    ? Icons.accessible
-                    : Icons.accessibility_new,
-                iconColor:
-                    driver.hasDisability ? Colors.blue : Colors.green,
+                icon:
+                    driver.hasDisability
+                        ? Icons.accessible
+                        : Icons.accessibility_new,
+                iconColor: driver.hasDisability ? Colors.blue : Colors.green,
               ),
             ]),
             const SizedBox(height: 16),
@@ -308,9 +305,7 @@ class DriverDetailScreen extends StatelessWidget {
               onPressed: () {
                 // Map functionality would go here
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Map feature coming soon'),
-                  ),
+                  const SnackBar(content: Text('Map feature coming soon')),
                 );
               },
               icon: const Icon(Icons.map),
@@ -337,8 +332,12 @@ class DriverDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(String label, String value,
-      {IconData? icon, Color? iconColor}) {
+  Widget _buildInfoRow(
+    String label,
+    String value, {
+    IconData? icon,
+    Color? iconColor,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(

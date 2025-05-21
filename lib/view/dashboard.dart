@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:taskova_shopkeeper/view/business_detial_filling.dart';
@@ -6,7 +5,7 @@ import 'package:taskova_shopkeeper/view/instant_job_post.dart';
 import 'package:taskova_shopkeeper/view/job_post.dart';
 import 'package:taskova_shopkeeper/view/mypost.dart';
 // Import your BusinessJobPostsPage
- // Adjust the import path as needed
+// Adjust the import path as needed
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -55,17 +54,8 @@ class _DashboardState extends State<Dashboard> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text("Takeaway Owner Dashboard"),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.person),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => BusinessFormPage()),
-                );
-              },
-            ),
+        appBar: AppBar(title: Text("Takeaway Owner Dashboard"), actions: [
+            
           ],
         ),
         body: SingleChildScrollView(
@@ -157,9 +147,7 @@ class _DashboardState extends State<Dashboard> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder:  (context) =>  MyJobpost(),
-                        ),
+                        MaterialPageRoute(builder: (context) => MyJobpost()),
                       );
                     },
                   ),

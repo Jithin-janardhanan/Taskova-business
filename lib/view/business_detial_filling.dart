@@ -1666,23 +1666,23 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
                     const SizedBox(height: 20),
 
                     // Skip for now button
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => HomePageWithBottomNav(),
-                          ),
-                        );
-                      },
-                      child: Text(
-                        appLanguage.get('skip_for_now') ?? 'Skip for now',
-                        style: const TextStyle(
-                          color: AppColors.secondaryBlue,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
+                    // TextButton(
+                    //   onPressed: () {
+                    //     Navigator.pushReplacement(
+                    //       context,
+                    //       MaterialPageRoute(
+                    //         builder: (context) => HomePageWithBottomNav(),
+                    //       ),
+                    //     );
+                    //   },
+                    //   child: Text(
+                    //     appLanguage.get('skip_for_now') ?? 'Skip for now',
+                    //     style: const TextStyle(
+                    //       color: AppColors.secondaryBlue,
+                    //       fontWeight: FontWeight.w500,
+                    //     ),
+                    //   ),
+                    // ),
 
                     const SizedBox(height: 20),
                   ],
