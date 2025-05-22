@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:http/http.dart' as http;
@@ -15,7 +16,7 @@ import 'package:taskova_shopkeeper/view/business_detial_filling.dart'
     show BusinessFormPage;
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+  const ProfilePage({super.key});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -36,13 +37,14 @@ class _ProfilePageState extends State<ProfilePage> {
   Map<String, dynamic>? _selectedBusiness;
 
   // Additional user info
-  String _joinDate = 'April 2025';
-  int _tasksCompleted = 0;
-  bool _emailVerified = false;
+  final String _joinDate = 'April 2025';
+  final int _tasksCompleted = 0;
+  final bool _emailVerified = false;
   String? _profilePicture;
 
   // Base URL for images
-  final String _baseImageUrl = 'https://anjalitechfifo.pythonanywhere.com';
+  final String _baseImageUrl = dotenv.env['BASE_URL'] ?? '';
+
 
   @override
   void initState() {
@@ -83,7 +85,7 @@ class _ProfilePageState extends State<ProfilePage> {
         final response = await http
             .get(
               Uri.parse(
-                'https://anjalitechfifo.pythonanywhere.com/api/shopkeeper/profile/',
+                ApiConfig.shopkeeperProfileUrl,
               ),
               headers: {
                 'Authorization': 'Bearer $_accessToken',
@@ -255,42 +257,7 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // void _logout() async {
-  //   // Show confirmation dialog
-  //   final confirm = await showDialog<bool>(
-  //     context: context,
-  //     builder:
-  //         (context) => AlertDialog(
-  //           title: const Text('Logout'),
-  //           content: const Text('Are you sure you want to logout?'),
-  //           actions: [
-  //             TextButton(
-  //               onPressed: () => Navigator.pop(context, false),
-  //               child: const Text('Cancel'),
-  //             ),
-  //             ElevatedButton(
-  //               onPressed: () => Navigator.pop(context, true),
-  //               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-  //               child: const Text('Logout'),
-  //             ),
-  //           ],
-  //         ),
-  //   );
-
-  //   if (confirm != true) return;
-
-  //   // Perform logout
-  //   final prefs = await SharedPreferences.getInstance();
-  //   await prefs.remove('access_token');
-  //   await prefs.remove('refresh_token');
-
-  //   // Keep email and name for convenience on next login
-
-  //   Navigator.of(context).pushAndRemoveUntil(
-  //     MaterialPageRoute(builder: (context) => const Login()),
-  //     (route) => false,
-  //   );
-  // }
+ 
 
   Future<void> _pickImage() async {
     try {

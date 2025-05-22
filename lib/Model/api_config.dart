@@ -81,8 +81,12 @@ class ApiConfig {
   static String get profileStatusUrl => '$baseUrl/api/profile-status/';
 
   // Business endpoints
-  static String get businesses => '$baseUrl/api/shopkeeper/businesses/';// to choose fetch (it will al the businees in one profile)
+  static String get businesses => '$baseUrl/api/shopkeeper/businesses/';// to choose fetch (it will fetch all the business in one profile)
   static String get jobposts => '$baseUrl/api/job-posts/create/';
   static String get regiserBusiness => '$baseUrl/api/shopkeeper/businesses/';
+
+
+  static String get fulldriverlist => '$baseUrl/api/drivers/';
+
   
 }

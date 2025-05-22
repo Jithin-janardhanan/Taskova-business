@@ -1,18 +1,21 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+import 'package:taskova_shopkeeper/Model/api_config.dart';
 import 'package:taskova_shopkeeper/view/specific_job_detials.dart';
 
 class MyJobpost extends StatefulWidget {
-  const MyJobpost({Key? key}) : super(key: key);
+  const MyJobpost({super.key});
 
   @override
   State<MyJobpost> createState() => _MyJobpostState();
 }
 
 class _MyJobpostState extends State<MyJobpost> {
+    final baseUrl = dotenv.env['BASE_URL'];
   String? _authToken;
   bool _isLoading = true;
   String? _errorMessage;
@@ -74,7 +77,7 @@ class _MyJobpostState extends State<MyJobpost> {
       'Content-Type': 'application/json',
     };
   }
-
+// Fetch businesses list API
   Future<void> fetchBusinesses() async {
     setState(() {
       _isLoading = true;
@@ -82,10 +85,10 @@ class _MyJobpostState extends State<MyJobpost> {
     });
 
     try {
-      // Fetch businesses list
+      // Fetch businesses list API
       final businessResponse = await http.get(
         Uri.parse(
-          'https://anjalitechfifo.pythonanywhere.com/api/shopkeeper/businesses/',
+          ApiConfig.businesses,
         ),
         headers: _getAuthHeaders(),
       );
@@ -132,7 +135,7 @@ class _MyJobpostState extends State<MyJobpost> {
       });
     }
   }
-
+//we can get post of specific business
   Future<void> fetchJobsForBusiness(int businessId) async {
     setState(() {
       _isLoading = true;
@@ -143,7 +146,7 @@ class _MyJobpostState extends State<MyJobpost> {
     try {
       final jobResponse = await http.get(
         Uri.parse(
-          'https://anjalitechfifo.pythonanywhere.com/api/job-posts/business/$businessId/',
+          '$baseUrl/api/job-posts/business/$businessId/',
         ),
         headers: _getAuthHeaders(),
       );

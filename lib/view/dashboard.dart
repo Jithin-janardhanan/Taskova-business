@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:taskova_shopkeeper/view/business_detial_filling.dart';
 import 'package:taskova_shopkeeper/view/instant_job_post.dart';
 import 'package:taskova_shopkeeper/view/job_post.dart';
 import 'package:taskova_shopkeeper/view/mypost.dart';

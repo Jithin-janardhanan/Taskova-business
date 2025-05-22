@@ -677,7 +677,7 @@ import 'package:taskova_shopkeeper/language/language_provider.dart';
 import 'package:taskova_shopkeeper/view/bottom_nav.dart';
 
 class BusinessFormPage extends StatefulWidget {
-  const BusinessFormPage({Key? key}) : super(key: key);
+  const BusinessFormPage({super.key});
 
   @override
   State<BusinessFormPage> createState() => _BusinessFormPageState();
@@ -807,7 +807,7 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
         });
       }
     } catch (e) {
-      print('Error fetching postcode suggestions: $e');
+      
 
       // Fallback to a static list if there's a network error
       final fallbackSuggestions = _generateFallbackPostcodes(query);
@@ -960,7 +960,7 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
 
       // Check file size
       final fileSize = await _businessImage!.length();
-      print("Image file size: ${fileSize} bytes");
+      print("Image file size: $fileSize bytes");
 
       // Check if file is too large (e.g., >5MB)
       if (fileSize > 5 * 1024 * 1024) {

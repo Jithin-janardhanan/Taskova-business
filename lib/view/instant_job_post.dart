@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskova_shopkeeper/Model/api_config.dart';
 
 class InstatJobPost extends StatefulWidget {
-  const InstatJobPost({Key? key}) : super(key: key);
+  const InstatJobPost({super.key});
 
   @override
   _InstatJobPostState createState() => _InstatJobPostState();
@@ -32,12 +32,12 @@ class _InstatJobPostState extends State<InstatJobPost> {
   late DateTime _endTime;
   bool _showHourlyRate = true;
   bool _showPerDeliveryRate = true;
-  List<String> _complimentaryOptions = [
+  final List<String> _complimentaryOptions = [
     'Meal during shift',
     'Free drinks',
     'Fuel allowance',
   ];
-  List<bool> _selectedComplimentary = [true, false, false];
+  final List<bool> _selectedComplimentary = [true, false, false];
   String _newComplimentary = '';
 
   // API endpoints

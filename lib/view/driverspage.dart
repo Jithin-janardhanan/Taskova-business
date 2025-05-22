@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:taskova_shopkeeper/Model/api_config.dart';
 
 class Driver {
   final String name;
@@ -61,18 +62,15 @@ class Driver {
   }
 }
 
-
-
 class DriverService {
-  
   String? _authToken;
-  static const String baseUrl = 'https://anjalitechfifo.pythonanywhere.com/api';
+
   static const String token = '';
 
   static Future<List<Driver>> fetchDrivers() async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/drivers/'),
+        Uri.parse(ApiConfig.fulldriverlist),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

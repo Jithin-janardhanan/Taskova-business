@@ -228,10 +228,12 @@ class _RegistrationState extends State<Registration> {
                     controller: _confirmPass,
                     obscureText: true,
                     validator: (val) {
-                      if (val == null || val.isEmpty)
+                      if (val == null || val.isEmpty) {
                         return appLanguage.get('confirm_password_is_required');
-                      if (val != _passwordController.text)
+                      }
+                      if (val != _passwordController.text) {
                         return appLanguage.get('password_do_not_match');
+                      }
                       return null;
                     },
                     decoration: InputDecoration(

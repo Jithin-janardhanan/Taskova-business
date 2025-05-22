@@ -10,10 +10,11 @@ String? validateEmail(String? value) {
 
   if (value == null || value.isEmpty) {
     return 'Please enter email';
-  } else
+  } else {
     return value.isNotEmpty && !regex.hasMatch(value)
         ? 'Enter a valid email address'
         : null;
+  }
 }
 
 String? validatePassword(String? value) {

@@ -10,7 +10,7 @@ import 'package:taskova_shopkeeper/Model/colors.dart';
 // Add this package for better calendar
 
 class ScheduleJobPost extends StatefulWidget {
-  const ScheduleJobPost({Key? key}) : super(key: key);
+  const ScheduleJobPost({super.key});
 
   @override
   _ScheduleJobPostState createState() => _ScheduleJobPostState();
@@ -49,12 +49,12 @@ class _ScheduleJobPostState extends State<ScheduleJobPost> {
   );
   bool _showHourlyRate = true;
   bool _showPerDeliveryRate = true;
-  List<String> _complimentaryOptions = [
+  final List<String> _complimentaryOptions = [
     'Meal during shift',
     'Free drinks',
     'Fuel allowance',
   ];
-  List<bool> _selectedComplimentary = [true, false, false];
+  final List<bool> _selectedComplimentary = [true, false, false];
   String _newComplimentary = '';
 
   // For date range limitation

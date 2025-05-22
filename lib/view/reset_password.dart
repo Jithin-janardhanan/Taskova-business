@@ -10,9 +10,9 @@ class OTPVerificationScreen extends StatefulWidget {
   final String email;
 
   const OTPVerificationScreen({
-    Key? key,
+    super.key,
     required this.email,
-  }) : super(key: key);
+  });
 
   @override
   _OTPVerificationScreenState createState() => _OTPVerificationScreenState();

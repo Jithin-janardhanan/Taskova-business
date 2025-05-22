@@ -76,12 +76,12 @@ class AppLanguage extends ChangeNotifier {
     'failed_to_update_profile': 'Failed to update profile. Please try again.',
     'business_details': 'Business Details',
 'business_instructions': 'Please fill in the details of your business',
-'business_name': 'Business Name',
-'enter_business_name': 'Enter your business name',
-'business_name_required': 'Business name is required',
-'business_address': 'Business Address',
-'enter_business_address': 'Enter your business address',
-'business_address_required': 'Business address is required',
+// 'business_name': 'Business Name',
+// 'enter_business_name': 'Enter your business name',
+// 'business_name_required': 'Business name is required',
+// 'business_address': 'Business Address',
+// 'enter_business_address': 'Enter your business address',
+// 'business_address_required': 'Business address is required',
 'email': 'Email',
 'enter_email': 'Enter business email',
 'email_required': 'Email is required',
@@ -100,8 +100,8 @@ class AppLanguage extends ChangeNotifier {
 'longitude': 'Longitude',
 'enter_longitude': 'Enter longitude',
 'save_business': 'Save Business',
-'skip_for_now': 'Skip for now',
-'connection_error': 'Connection error. Please check your internet connection.'
+// 'skip_for_now': 'Skip for now',
+// 'connection_error': 'Connection error. Please check your internet connection.'
      
   };
 

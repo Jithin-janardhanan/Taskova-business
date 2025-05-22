@@ -5,7 +5,7 @@ import 'package:taskova_shopkeeper/view/profile.dart';
 
 
 class HomePageWithBottomNav extends StatefulWidget {
-  const HomePageWithBottomNav({Key? key}) : super(key: key);
+  const HomePageWithBottomNav({super.key});
 
   @override
   State<HomePageWithBottomNav> createState() => _HomePageWithBottomNavState();
