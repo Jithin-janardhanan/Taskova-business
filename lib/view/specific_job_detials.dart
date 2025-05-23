@@ -283,7 +283,7 @@ import 'package:taskova_shopkeeper/view/chat.dart';
 class JobPostDetailsPage extends StatefulWidget {
   final int jobId;
 
-  const JobPostDetailsPage({Key? key, required this.jobId}) : super(key: key);
+  const JobPostDetailsPage({super.key, required this.jobId});
 
   @override
   State<JobPostDetailsPage> createState() => _JobPostDetailsPageState();
@@ -506,19 +506,25 @@ class _JobPostDetailsPageState extends State<JobPostDetailsPage> {
                                                   ),
                                                 ),
                                                 const SizedBox(width: 16),
-                                               ElevatedButton(
-  onPressed: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ChatScreen(
-          jobRequestId: jobRequestId,
-        ),
-      ),
-    );
-  },
-  child: const Text("Chat"),
-),
+                                                ElevatedButton(
+                                                  onPressed: () {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder:
+                                                            (
+                                                              context,
+                                                            ) => ChatScreen(
+                                                              jobRequestId:
+                                                                  jobRequestId,
+                                                              // currentUserId:
+                                                              //     currentUserId,
+                                                            ),
+                                                      ),
+                                                    );
+                                                  },
+                                                  child: const Text("Chat"),
+                                                ),
                                               ],
                                             )
                                             : ElevatedButton(

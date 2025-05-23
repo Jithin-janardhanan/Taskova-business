@@ -144,8 +144,7 @@ class GoogleAuthService {
     }
 
     print(
-      "Saving user data: access_token=$accessToken, refresh_token=$refreshToken, " "email=$email, username=$username, userId=$userId, role=$role, " +
-          "profile_picture=$profilePicture",
+      "Saving user data: access_token=$accessToken, refresh_token=$refreshToken, " "email=$email, username=$username, userId=$userId, role=$role, " "profile_picture=$profilePicture",
     );
 
     // Save all the necessary user data

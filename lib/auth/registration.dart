@@ -10,7 +10,6 @@ import 'login.dart';
 import '../Model/validator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:io';
 
 class Registration extends StatefulWidget {
   const Registration({super.key});

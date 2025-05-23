@@ -1057,7 +1057,6 @@ import 'package:taskova_shopkeeper/auth/google.dart';
 import 'package:taskova_shopkeeper/auth/profile_page.dart';
 import 'package:taskova_shopkeeper/language/language_selection_screen.dart';
 import 'package:taskova_shopkeeper/view/bottom_nav.dart';
-import 'applelogi.dart';
 import '../language/language_provider.dart';
 import 'registration.dart';
 import 'package:http/http.dart' as http;

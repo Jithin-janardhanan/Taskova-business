@@ -55,6 +55,8 @@ dependencies:
   flutter_typeahead: ^5.2.0
   cached_network_image: ^3.4.1
   web_socket_channel: ^3.0.3
+  font_awesome_flutter: ^10.8.0
+  animate_do: ^4.2.0
 
 dev_dependencies:
   flutter_test:
