@@ -488,14 +488,14 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 class ChatScreen extends StatefulWidget {
   final int jobRequestId;
 
-  const ChatScreen({Key? key, required this.jobRequestId}) : super(key: key);
+  const ChatScreen({super.key, required this.jobRequestId});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  final String baseUrl = dotenv.env['BASE_URL'] ?? 'http://192.168.20.29:8000';
+  final String baseUrl = dotenv.env['BASE_URL'] ?? 'http://192.168.20.29: ';
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   
@@ -694,7 +694,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void _connectWebSocket() {
     try {
       _channel = WebSocketChannel.connect(
-        Uri.parse('ws://192.168.20.29:8000/ws/chat/$_chatRoomId/?token=$_authToken'),
+        Uri.parse('ws://192.168.20.29:8001/ws/chat/$_chatRoomId/?token=$_authToken'),
       );
 
       _channel!.stream.listen(

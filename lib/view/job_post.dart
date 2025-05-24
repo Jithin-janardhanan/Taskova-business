@@ -422,7 +422,7 @@ class _ScheduleJobPostState extends State<ScheduleJobPost> {
       "business": _selectedBusinessId,
       "title": _titleController.text,
       "description": _descriptionController.text,
-      "post_date": DateFormat('yyyy-MM-dd').format(_postDate),
+      "job_date": DateFormat('yyyy-MM-dd').format(_postDate),
       "start_time": DateFormat('HH:mm:ss').format(_startTime),
       "end_time": DateFormat('HH:mm:ss').format(_endTime),
       "hourly_rate": _showHourlyRate ? _hourlyRateController.text : null,
