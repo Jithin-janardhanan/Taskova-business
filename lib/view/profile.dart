@@ -12,6 +12,7 @@ import 'package:taskova_shopkeeper/Model/colors.dart';
 import 'package:taskova_shopkeeper/auth/logout.dart';
 import 'package:taskova_shopkeeper/view/business_detial_filling.dart'
     show BusinessFormPage;
+import 'package:taskova_shopkeeper/view/edit_profile.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -42,7 +43,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // Base URL for images
   final String _baseImageUrl = dotenv.env['BASE_URL'] ?? '';
-
 
   @override
   void initState() {
@@ -82,9 +82,7 @@ class _ProfilePageState extends State<ProfilePage> {
       try {
         final response = await http
             .get(
-              Uri.parse(
-                ApiConfig.shopkeeperProfileUrl,
-              ),
+              Uri.parse(ApiConfig.shopkeeperProfileUrl),
               headers: {
                 'Authorization': 'Bearer $_accessToken',
                 'Content-Type': 'application/json',
@@ -255,8 +253,6 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
- 
-
   Future<void> _pickImage() async {
     try {
       final picker = ImagePicker();
@@ -343,6 +339,30 @@ class _ProfilePageState extends State<ProfilePage> {
       );
     }
   }
+
+  
+// navigation to profile edit page
+void _navigateToEditProfile() {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => ProfileEditPage(
+        initialData: {
+          'personal_profile': {
+            'name': _name,
+            'email': _email,
+            'phone_number': _phoneNumber,
+            'profile_picture': _profilePicture,
+          }
+        },
+      ),
+    ),
+  ).then((updatedData) {
+    if (updatedData != null) {
+      _loadUserData(); // Refresh the profile data
+    }
+  });
+}
 
   @override
   Widget build(BuildContext context) {
@@ -432,156 +452,258 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  // Widget _buildProfileHeader() {
+  //   return Container(
+  //     padding: const EdgeInsets.all(16),
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.circular(16),
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: Colors.grey.withOpacity(0.1),
+  //           spreadRadius: 1,
+  //           blurRadius: 10,
+  //           offset: const Offset(0, 1),
+  //         ),
+  //       ],
+  //     ),
+  //     child: Column(
+  //       children: [
+  //         Stack(
+  //           children: [
+  //             CircleAvatar(
+  //               radius: 60,
+  //               backgroundColor: AppColors.lightBlue,
+  //               backgroundImage:
+  //                   _profilePicture != null
+  //                       ? CachedNetworkImageProvider(
+  //                         '$_baseImageUrl$_profilePicture',
+  //                       )
+  //                       : null,
+  //               child:
+  //                   _profilePicture == null
+  //                       ? const Icon(
+  //                         Icons.person,
+  //                         size: 60,
+  //                         color: AppColors.primaryBlue,
+  //                       )
+  //                       : null,
+  //             ),
+  //             Positioned(
+  //               right: 0,
+  //               bottom: 0,
+  //               child: InkWell(
+  //                 onTap: _pickImage,
+  //                 child: Container(
+  //                   padding: const EdgeInsets.all(8),
+  //                   decoration: BoxDecoration(
+  //                     color: AppColors.primaryBlue,
+  //                     shape: BoxShape.circle,
+  //                     border: Border.all(color: Colors.white, width: 2),
+  //                   ),
+  //                   child: const Icon(
+  //                     Icons.camera_alt,
+  //                     color: Colors.white,
+  //                     size: 18,
+  //                   ),
+  //                 ),
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //         const SizedBox(height: 16),
+
+  //         // Name (editable)
+  //         if (_isEditingName)
+  //           Row(
+  //             mainAxisAlignment: MainAxisAlignment.center,
+  //             children: [
+  //               Expanded(
+  //                 child: TextField(
+  //                   controller: _nameController,
+  //                   textAlign: TextAlign.center,
+  //                   decoration: const InputDecoration(
+  //                     hintText: 'Enter your name',
+  //                     contentPadding: EdgeInsets.symmetric(
+  //                       horizontal: 16,
+  //                       vertical: 8,
+  //                     ),
+  //                     border: OutlineInputBorder(),
+  //                     isDense: true,
+  //                   ),
+  //                   style: const TextStyle(
+  //                     fontSize: 20,
+  //                     fontWeight: FontWeight.bold,
+  //                   ),
+  //                 ),
+  //               ),
+  //               IconButton(
+  //                 icon: const Icon(Icons.check, color: Colors.green),
+  //                 onPressed: _updateProfile,
+  //               ),
+  //               IconButton(
+  //                 icon: const Icon(Icons.close, color: Colors.red),
+  //                 onPressed: () {
+  //                   setState(() {
+  //                     _isEditingName = false;
+  //                     _nameController.text = _name;
+  //                   });
+  //                 },
+  //               ),
+  //             ],
+  //           )
+  //         else
+  //           Row(
+  //             mainAxisAlignment: MainAxisAlignment.center,
+  //             children: [
+  //               Text(
+  //                 _name,
+  //                 style: const TextStyle(
+  //                   fontSize: 22,
+  //                   fontWeight: FontWeight.bold,
+  //                   color: AppColors.primaryBlue,
+  //                 ),
+  //               ),
+  //               IconButton(
+  //                 icon: const Icon(Icons.edit, size: 18),
+  //                 onPressed:
+  //                     navigateToEditProfile(), // This method is provided in the extension
+  //               ),
+  //             ],
+  //           ),
+  //         Text(_email, style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+  //         const SizedBox(height: 8),
+  //         Container(
+  //           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+  //           decoration: BoxDecoration(
+  //             color: AppColors.lightBlue.withOpacity(0.3),
+  //             borderRadius: BorderRadius.circular(20),
+  //           ),
+  //           child: const Row(
+  //             mainAxisSize: MainAxisSize.min,
+  //             children: [
+  //               Icon(Icons.verified, size: 16, color: AppColors.secondaryBlue),
+  //               SizedBox(width: 4),
+  //               Text(
+  //                 'SHOPKEEPER',
+  //                 style: TextStyle(
+  //                   fontWeight: FontWeight.bold,
+  //                   color: AppColors.secondaryBlue,
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
   Widget _buildProfileHeader() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 10,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Stack(
-            children: [
-              CircleAvatar(
-                radius: 60,
-                backgroundColor: AppColors.lightBlue,
-                backgroundImage:
-                    _profilePicture != null
-                        ? CachedNetworkImageProvider(
-                          '$_baseImageUrl$_profilePicture',
-                        )
-                        : null,
-                child:
-                    _profilePicture == null
-                        ? const Icon(
-                          Icons.person,
-                          size: 60,
-                          color: AppColors.primaryBlue,
-                        )
-                        : null,
-              ),
-              Positioned(
-                right: 0,
-                bottom: 0,
-                child: InkWell(
-                  onTap: _pickImage,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryBlue,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    child: const Icon(
-                      Icons.camera_alt,
-                      color: Colors.white,
-                      size: 18,
-                    ),
+  return Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.1),
+          spreadRadius: 1,
+          blurRadius: 10,
+          offset: const Offset(0, 1),
+        ),
+      ],
+    ),
+    child: Column(
+      children: [
+        Stack(
+          children: [
+            CircleAvatar(
+              radius: 60,
+              backgroundColor: AppColors.lightBlue,
+              backgroundImage:
+                  _profilePicture != null
+                      ? CachedNetworkImageProvider(
+                        '$_baseImageUrl$_profilePicture',
+                      )
+                      : null,
+              child:
+                  _profilePicture == null
+                      ? const Icon(
+                        Icons.person,
+                        size: 60,
+                        color: AppColors.primaryBlue,
+                      )
+                      : null,
+            ),
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: InkWell(
+                onTap: _navigateToEditProfile, // Updated to use the new method
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryBlue,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
                   ),
+                  child: const Icon(
+                    Icons.edit, // Changed from camera_alt to edit
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        // Name (now just displays, editing is done in edit page)
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              _name,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primaryBlue,
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.edit, size: 18),
+              onPressed: _navigateToEditProfile, // Use the method directly
+            ),
+          ],
+        ),
+        Text(_email, style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.lightBlue.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.verified, size: 16, color: AppColors.secondaryBlue),
+              SizedBox(width: 4),
+              Text(
+                'SHOPKEEPER',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.secondaryBlue,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-
-          // Name (editable)
-          if (_isEditingName)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _nameController,
-                    textAlign: TextAlign.center,
-                    decoration: const InputDecoration(
-                      hintText: 'Enter your name',
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.check, color: Colors.green),
-                  onPressed: _updateProfile,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.red),
-                  onPressed: () {
-                    setState(() {
-                      _isEditingName = false;
-                      _nameController.text = _name;
-                    });
-                  },
-                ),
-              ],
-            )
-          else
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  _name,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primaryBlue,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.edit, size: 18),
-                  onPressed: () {
-                    setState(() {
-                      _isEditingName = true;
-                      _nameController.text = _name;
-                    });
-                  },
-                ),
-              ],
-            ),
-          Text(_email, style: TextStyle(fontSize: 16, color: Colors.grey[600])),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppColors.lightBlue.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.verified, size: 16, color: AppColors.secondaryBlue),
-                SizedBox(width: 4),
-                Text(
-                  'SHOPKEEPER',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.secondaryBlue,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildProfileStats() {
     return Container(
@@ -881,6 +1003,36 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
           const SizedBox(height: 16),
+
+          // ADD THIS NEW EDIT PROFILE ITEM HERE - at the top of settings
+          _buildSettingItem(
+            Icons.edit,
+            'Edit Profile',
+            'Update your personal information',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (context) => ProfileEditPage(
+                        initialData: {
+                          'personal_profile': {
+                            'name': _name,
+                            'email': _email,
+                            'phone_number': _phoneNumber,
+                            'profile_picture': _profilePicture,
+                          },
+                        },
+                      ),
+                ),
+              ).then((updatedData) {
+                if (updatedData != null) {
+                  _loadUserData(); // Refresh the profile data
+                }
+              });
+            },
+          ),
+
           _buildSettingItem(
             Icons.lock_outline,
             'Change Password',
@@ -1001,3 +1153,4 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 }
+

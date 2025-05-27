@@ -94,123 +94,7 @@ class _ProfileDetailFillingPageState extends State<ProfileDetailFillingPage> {
     );
   }
 
-  // Future<void> _submitProfileDetails() async {
-  //   if (_formKey.currentState!.validate()) {
-  //     if (_accessToken == null || _accessToken!.isEmpty) {
-  //       print("Error: No access token available");
-  //       _showSnackbar("Please log in again.", true);
-  //       Navigator.pushReplacement(
-  //         context,
-  //         MaterialPageRoute(builder: (context) => const Registration()),
-  //       );
-  //       return;
-  //     }
-
-  //     setState(() {
-  //       _isLoading = true;
-  //     });
-
-  //     try {
-  //       var headers = {
-  //         'Authorization': 'Bearer $_accessToken',
-  //         'Content-Type': 'multipart/form-data',
-  //       };
-
-  //       var request = http.MultipartRequest(
-  //         'POST',
-  //         Uri.parse(
-  //             'https://anjalitechfifo.pythonanywhere.com/api/shopkeeper/profile/'),
-  //       );
-
-  //       // Add personal profile fields
-  //       var personalProfileFields = {
-  //         'personal_profile[phone_number]': _phoneController.text,
-  //         'personal_profile[name]': _nameController.text,
-  //         'personal_profile[email]': '', // Adjust if backend requires email
-  //       };
-  //       request.fields.addAll(personalProfileFields);
-
-  //       // Add business profile fields if selected
-  //       if (_includeBusinessProfile) {
-  //         var businessProfileFields = {
-  //           'business_profile[business_name]': _businessNameController.text,
-  //           'business_profile[business_address]':
-  //               _businessAddressController.text,
-  //         };
-  //         request.fields.addAll(businessProfileFields);
-  //       }
-
-  //       // Add profile picture if selected
-  //       if (_profileImage != null) {
-  //         var profilePicture = await http.MultipartFile.fromPath(
-  //           'personal_profile[profile_picture]', // Adjust field name if needed
-  //           _profileImage!.path,
-  //         );
-  //         request.files.add(profilePicture);
-  //         print("Added profile picture: ${_profileImage!.path}");
-  //       }
-
-  //       request.headers.addAll(headers);
-  //       print("Request fields: ${request.fields}");
-  //       print("Request files: ${request.files.map((f) => f.field).toList()}");
-
-  //       final appLanguage = Provider.of<AppLanguage>(context, listen: false);
-
-  //       http.StreamedResponse response = await request.send();
-  //       final responseBody = await response.stream.bytesToString();
-
-  //       setState(() {
-  //         _isLoading = false;
-  //       });
-
-  //       print("Response status: ${response.statusCode}");
-  //       print("Response body: $responseBody");
-
-  //       if (response.statusCode == 200 || response.statusCode == 201) {
-  //         print('Profile updated successfully');
-
-  //         // Update stored user name
-  //         final prefs = await SharedPreferences.getInstance();
-  //         await prefs.setString('user_name', _nameController.text);
-
-  //         // Show success message
-  //         _showSnackbar(
-  //             await appLanguage.translate(
-  //                 "Profile updated successfully!", appLanguage.currentLanguage),
-  //             false);
-
-  //         // Navigate to business form page
-  //         Navigator.pushReplacement(
-  //           context,
-  //           MaterialPageRoute(builder: (context) => BusinessFormPage()),
-  //         );
-  //       } else {
-  //         print(
-  //             'Profile update failed: ${response.statusCode} ${response.reasonPhrase}');
-  //         print('Error response: $responseBody');
-
-  //         // Show error message
-  //         _showSnackbar(
-  //             await appLanguage.translate(
-  //                 "Failed to update profile: ${response.reasonPhrase}",
-  //                 appLanguage.currentLanguage),
-  //             true);
-  //       }
-  //     } catch (e) {
-  //       setState(() {
-  //         _isLoading = false;
-  //       });
-  //       print("Profile update error: $e");
-
-  //       final appLanguage = Provider.of<AppLanguage>(context, listen: false);
-  //       _showSnackbar(
-  //           await appLanguage.translate(
-  //               "Connection error. Please check your internet connection.",
-  //               appLanguage.currentLanguage),
-  //           true);
-  //     }
-  //   }
-  // }
+ 
 
   // Updated _submitProfileDetails method to handle profile picture preservation
   Future<void> _submitProfileDetails() async {
@@ -645,10 +529,7 @@ class _ProfileDetailFillingPageState extends State<ProfileDetailFillingPage> {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
-
-                 
-                  
+                  const SizedBox(height: 20), 
                 ],
               ),
             ),

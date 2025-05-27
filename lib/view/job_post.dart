@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:taskova_shopkeeper/Model/api_config.dart';
 import 'package:taskova_shopkeeper/Model/colors.dart';
+import 'package:taskova_shopkeeper/view/mypost.dart';
 
 // Add this package for better calendar
 
@@ -483,7 +484,11 @@ class _ScheduleJobPostState extends State<ScheduleJobPost> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () {
+                Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (context) => MyJobpost()));
+              },
               child: const Text('OK'),
             ),
           ],

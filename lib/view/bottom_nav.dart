@@ -3,7 +3,6 @@ import 'package:taskova_shopkeeper/view/dashboard.dart';
 import 'package:taskova_shopkeeper/view/driverspage.dart';
 import 'package:taskova_shopkeeper/view/profile.dart';
 
-
 class HomePageWithBottomNav extends StatefulWidget {
   const HomePageWithBottomNav({super.key});
 
@@ -15,7 +14,7 @@ class _HomePageWithBottomNavState extends State<HomePageWithBottomNav> {
   int _currentIndex = 0;
 
   // List of pages
-  final List<Widget> _pages = [Dashboard(), ProfilePage(), DriverListScreen()];
+  final List<Widget> _pages = [Dashboard(), ProfilePage()];
 
   // On tap handler
   void _onTabTapped(int index) {
@@ -37,10 +36,10 @@ class _HomePageWithBottomNavState extends State<HomePageWithBottomNav> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.personal_injury),
-            label: 'Drivers',
-          ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(Icons.personal_injury),
+          //   label: 'Drivers',
+          // ),
         ],
       ),
     );

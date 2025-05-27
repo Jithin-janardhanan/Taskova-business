@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:taskova_shopkeeper/Model/api_config.dart';
+import 'package:taskova_shopkeeper/view/Job_edit.dart';
+import 'package:taskova_shopkeeper/view/bottom_nav.dart';
 import 'package:taskova_shopkeeper/view/specific_job_detials.dart';
 
 class MyJobpost extends StatefulWidget {
@@ -15,7 +17,7 @@ class MyJobpost extends StatefulWidget {
 }
 
 class _MyJobpostState extends State<MyJobpost> {
-    final baseUrl = dotenv.env['BASE_URL'];
+  final baseUrl = dotenv.env['BASE_URL'];
   String? _authToken;
   bool _isLoading = true;
   String? _errorMessage;
@@ -77,7 +79,8 @@ class _MyJobpostState extends State<MyJobpost> {
       'Content-Type': 'application/json',
     };
   }
-// Fetch businesses list API
+
+  // Fetch businesses list API
   Future<void> fetchBusinesses() async {
     setState(() {
       _isLoading = true;
@@ -87,9 +90,7 @@ class _MyJobpostState extends State<MyJobpost> {
     try {
       // Fetch businesses list API
       final businessResponse = await http.get(
-        Uri.parse(
-          ApiConfig.businesses,
-        ),
+        Uri.parse(ApiConfig.businesses),
         headers: _getAuthHeaders(),
       );
 
@@ -135,7 +136,8 @@ class _MyJobpostState extends State<MyJobpost> {
       });
     }
   }
-//we can get post of specific business
+
+  //we can get post of specific business
   Future<void> fetchJobsForBusiness(int businessId) async {
     setState(() {
       _isLoading = true;
@@ -145,9 +147,7 @@ class _MyJobpostState extends State<MyJobpost> {
 
     try {
       final jobResponse = await http.get(
-        Uri.parse(
-          '$baseUrl/api/job-posts/business/$businessId/',
-        ),
+        Uri.parse('$baseUrl/api/job-posts/business/$businessId/'),
         headers: _getAuthHeaders(),
       );
 
@@ -188,7 +188,30 @@ class _MyJobpostState extends State<MyJobpost> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
+      // appBar: AppBar(
+      //   title: const Text(
+      //     'Job Post',
+      //     style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+      //   ),
+      //   backgroundColor: Colors.blue[700],
+      //   elevation: 0,
+      //   actions: [
+      //     IconButton(
+      //       icon: const Icon(Icons.refresh),
+      //       tooltip: 'Refresh',
+      //       onPressed: _loadTokenAndFetchData,
+      //     ),
+      //   ],
+      // ),
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => HomePageWithBottomNav()),
+            );
+          },
+        ),
         title: const Text(
           'Job Post',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
@@ -368,6 +391,7 @@ class _MyJobpostState extends State<MyJobpost> {
     final String jobTitle = job['title'] ?? 'Untitled Position';
     final String jobType = job['description'] ?? 'Not specified';
     final String location = _businessData!['address'] ?? 'No address provided';
+    //  "job_date": DateFormat('yyyy-MM-dd').format(_postDate),
 
     // Format creation date
     String postedDate = 'Unknown date';
@@ -390,12 +414,21 @@ class _MyJobpostState extends State<MyJobpost> {
         postedDate = 'Invalid date';
       }
     }
+    String jobDateFormatted = 'Not set';
+    if (job['job_date'] != null) {
+      try {
+        final jobDate = DateTime.parse(job['job_date']);
+        jobDateFormatted = DateFormat('MMM d, yyyy').format(jobDate);
+      } catch (e) {
+        jobDateFormatted = 'Invalid date';
+      }
+    }
 
     Color statusColor = Colors.green;
     String statusText = 'Active';
 
     if (job['status'] != null) {
-      switch (job['status'].toString().toLowerCase()) {
+      switch (job['is'].toString().toLowerCase()) {
         case 'active':
           statusColor = Colors.green;
           statusText = 'Active';
@@ -513,6 +546,10 @@ class _MyJobpostState extends State<MyJobpost> {
                                 Icons.calendar_today,
                                 'Posted: $postedDate',
                               ),
+                              _buildJobTag(
+                                Icons.event,
+                                'Job Date: $jobDateFormatted',
+                              ),
                             ],
                           ),
                         ],
@@ -560,8 +597,25 @@ class _MyJobpostState extends State<MyJobpost> {
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 10),
                         ),
-                        onPressed: () {
-                          // TODO: Navigate to edit job page
+                        onPressed: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => EditJobPage(
+                                    jobId: job['id'],
+                                    authToken: _authToken!,
+                                  ),
+                            ),
+                          );
+
+                          // If job was updated successfully, refresh the job list
+                          if (result == true) {
+                            if (_businessData != null &&
+                                _businessData!['id'] != null) {
+                              await fetchJobsForBusiness(_businessData!['id']);
+                            }
+                          }
                         },
                       ),
                     ),

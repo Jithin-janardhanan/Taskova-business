@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskova_shopkeeper/Model/api_config.dart';
+import 'package:taskova_shopkeeper/view/mypost.dart';
 
 class InstatJobPost extends StatefulWidget {
   const InstatJobPost({super.key});
@@ -383,10 +384,14 @@ class _InstatJobPostState extends State<InstatJobPost> {
             'Your driver job posting has been published. The job shift is scheduled for ${DateFormat('MMMM d, yyyy').format(_postDate)} from ${DateFormat('h:mm a').format(_startTime)} to ${DateFormat('h:mm a').format(_endTime)}.',
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
-            ),
+           TextButton(
+  onPressed: () {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => MyJobpost()),
+    );
+  },
+  child: const Text('OK'),
+),
           ],
         );
       },
