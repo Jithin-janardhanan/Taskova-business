@@ -188,21 +188,7 @@ class _MyJobpostState extends State<MyJobpost> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      // appBar: AppBar(
-      //   title: const Text(
-      //     'Job Post',
-      //     style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-      //   ),
-      //   backgroundColor: Colors.blue[700],
-      //   elevation: 0,
-      //   actions: [
-      //     IconButton(
-      //       icon: const Icon(Icons.refresh),
-      //       tooltip: 'Refresh',
-      //       onPressed: _loadTokenAndFetchData,
-      //     ),
-      //   ],
-      // ),
+      
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),

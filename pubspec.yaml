@@ -57,6 +57,7 @@ dependencies:
   web_socket_channel: ^3.0.3
   font_awesome_flutter: ^10.8.0
   animate_do: ^4.2.0
+  sign_in_with_apple: ^7.0.1
 
 dev_dependencies:
   flutter_test:
