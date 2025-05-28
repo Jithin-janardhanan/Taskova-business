@@ -835,6 +835,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:taskova_shopkeeper/Model/api_config.dart';
+import 'package:taskova_shopkeeper/view/mypost.dart';
 
 class InstatJobPost extends StatefulWidget {
   const InstatJobPost({Key? key}) : super(key: key);
@@ -1236,7 +1237,11 @@ class _InstatJobPostState extends State<InstatJobPost> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () {
+                Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (context) => MyJobpost()));
+              },
               child: Text(
                 'OK',
                 style: GoogleFonts.poppins(

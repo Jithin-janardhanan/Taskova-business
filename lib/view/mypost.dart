@@ -7,6 +7,8 @@ import 'package:intl/intl.dart';
 import 'package:taskova_shopkeeper/Model/api_config.dart';
 import 'package:taskova_shopkeeper/view/Job_edit.dart';
 import 'package:taskova_shopkeeper/view/bottom_nav.dart';
+import 'package:taskova_shopkeeper/view/instant_job_post.dart';
+import 'package:taskova_shopkeeper/view/job_post.dart';
 import 'package:taskova_shopkeeper/view/specific_job_detials.dart';
 
 class MyJobpost extends StatefulWidget {
@@ -28,6 +30,7 @@ class _MyJobpostState extends State<MyJobpost> {
 
   // Job posts data
   List<dynamic>? _jobPosts;
+  int applicantsCount = 0;
 
   // Selected business index
   int _selectedBusinessIndex = 0;
@@ -137,6 +140,38 @@ class _MyJobpostState extends State<MyJobpost> {
     }
   }
 
+  //Application count
+  Future<int> fetchApplicantsCount(int jobId) async {
+    try {
+      final request = http.Request(
+        'GET',
+        Uri.parse(
+          '$baseUrl/api/job-requests/list/$jobId/',
+        ), // already filtered by job
+      );
+      request.headers.addAll(_getAuthHeaders());
+
+      final response = await request.send();
+
+      if (response.statusCode == 200) {
+        final responseBody = await response.stream.bytesToString();
+        final data = json.decode(responseBody);
+
+        if (data is List) {
+          return data.length;
+        } else {
+          print('Unexpected format: not a list');
+        }
+      } else {
+        print('Failed to fetch applicant count: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+
+    return 0;
+  }
+
   //we can get post of specific business
   Future<void> fetchJobsForBusiness(int businessId) async {
     setState(() {
@@ -153,6 +188,16 @@ class _MyJobpostState extends State<MyJobpost> {
 
       if (jobResponse.statusCode == 200) {
         final jobData = json.decode(jobResponse.body);
+
+        // Parallelize fetching applicant counts
+        final futures =
+            jobData.map<Future<void>>((job) async {
+              final count = await fetchApplicantsCount(job['id']);
+              job['applicants_count'] = count;
+            }).toList();
+
+        await Future.wait(futures);
+
         setState(() {
           _jobPosts = jobData;
           _isLoading = false;
@@ -165,55 +210,92 @@ class _MyJobpostState extends State<MyJobpost> {
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Error fetching jobs: ${e.toString()}';
+        _errorMessage = 'Error fetching jobs: $e';
         _isLoading = false;
       });
     }
   }
 
-  void _selectBusiness(int index) {
-    if (index >= 0 && index < (_businessesList?.length ?? 0)) {
-      setState(() {
-        _selectedBusinessIndex = index;
-        _businessData = _businessesList![index];
-      });
-
-      if (_businessData != null && _businessData!['id'] != null) {
-        fetchJobsForBusiness(_businessData!['id']);
-      }
-    }
+  void _showPostJobOptions(BuildContext context) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text("Choose Job Type"),
+            content: Text(
+              "Do you want to hire for today or schedule for another day?",
+            ),
+            actions: [
+              TextButton.icon(
+                icon: Icon(Icons.flash_on),
+                label: Text("Hire for Today"),
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const InstatJobPost(),
+                    ),
+                  );
+                },
+              ),
+              TextButton.icon(
+                icon: Icon(Icons.calendar_today),
+                label: Text("Hire for Another Day"),
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ScheduleJobPost(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => HomePageWithBottomNav()),
-            );
-          },
-        ),
-        title: const Text(
-          'Job Post',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        backgroundColor: Colors.blue[700],
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh',
-            onPressed: _loadTokenAndFetchData,
+    return WillPopScope(
+      onWillPop: () async {
+        // Navigate to your desired page
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => HomePageWithBottomNav()),
+        );
+        return false; // prevent default back behavior
+      },
+      child: Scaffold(
+        backgroundColor: Colors.grey[50],
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => HomePageWithBottomNav(),
+                ),
+              );
+            },
           ),
-        ],
+          title: const Text(
+            'Job Post',
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+          backgroundColor: Colors.blue[700],
+          elevation: 0,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              tooltip: 'Refresh',
+              onPressed: _loadTokenAndFetchData,
+            ),
+          ],
+        ),
+        body: _buildBody(),
       ),
-
-      body: _buildBody(),
     );
   }
 
@@ -307,9 +389,7 @@ class _MyJobpostState extends State<MyJobpost> {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.blue[700],
                 ),
-                onPressed: () {
-                  // TODO: Navigate to job creation page
-                },
+                onPressed: () => _showPostJobOptions(context),
               ),
           ],
         ),
@@ -346,8 +426,11 @@ class _MyJobpostState extends State<MyJobpost> {
               ),
               const SizedBox(height: 24),
               ElevatedButton.icon(
-                icon: const Icon(Icons.add),
-                label: const Text('Create Job Posting'),
+                icon: const Icon(Icons.add, color: Colors.white),
+                label: const Text(
+                  'Create Job Posting',
+                  style: TextStyle(color: Colors.white),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue[700],
                   padding: const EdgeInsets.symmetric(
@@ -355,9 +438,7 @@ class _MyJobpostState extends State<MyJobpost> {
                     vertical: 12,
                   ),
                 ),
-                onPressed: () {
-                  // TODO: Navigate to job creation page
-                },
+                onPressed: () => _showPostJobOptions(context),
               ),
             ],
           ),
@@ -525,16 +606,27 @@ class _MyJobpostState extends State<MyJobpost> {
                           const SizedBox(height: 4),
                           Wrap(
                             spacing: 12,
+                            runSpacing: 8,
                             children: [
-                              _buildJobTag(Icons.location_on, location),
-                              _buildJobTag(Icons.work, jobType),
+                              _buildJobTag(
+                                Icons.location_on,
+                                location,
+                                iconColor: Colors.blue,
+                              ),
+                              _buildJobTag(
+                                Icons.work,
+                                jobType,
+                                iconColor: Colors.deepOrange,
+                              ),
                               _buildJobTag(
                                 Icons.calendar_today,
                                 'Posted: $postedDate',
+                                iconColor: Colors.green,
                               ),
                               _buildJobTag(
                                 Icons.event,
                                 'Job Date: $jobDateFormatted',
+                                iconColor: Colors.purple,
                               ),
                             ],
                           ),
@@ -555,9 +647,7 @@ class _MyJobpostState extends State<MyJobpost> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            job['applicants_count'] != null
-                                ? '${job['applicants_count']} Applicants'
-                                : '0 Applicants',
+                            '${job['applicants_count'] ?? 0} Applicants',
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w500,
@@ -639,15 +729,24 @@ class _MyJobpostState extends State<MyJobpost> {
     );
   }
 
-  Widget _buildJobTag(IconData icon, String text) {
+  Widget _buildJobTag(
+    IconData icon,
+    String text, {
+    Color iconColor = Colors.grey,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(top: 4.0),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: Colors.grey[600]),
+          Icon(icon, size: 14, color: iconColor),
           const SizedBox(width: 4),
-          Text(text, style: TextStyle(fontSize: 13, color: Colors.grey[700])),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+            ),
+          ),
         ],
       ),
     );

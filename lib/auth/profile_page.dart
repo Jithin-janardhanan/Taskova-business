@@ -94,8 +94,6 @@ class _ProfileDetailFillingPageState extends State<ProfileDetailFillingPage> {
     );
   }
 
- 
-
   // Updated _submitProfileDetails method to handle profile picture preservation
   Future<void> _submitProfileDetails() async {
     if (_formKey.currentState!.validate()) {
@@ -121,9 +119,7 @@ class _ProfileDetailFillingPageState extends State<ProfileDetailFillingPage> {
 
         var request = http.MultipartRequest(
           'POST',
-          Uri.parse(
-            ApiConfig.shopkeeperProfileUrl,
-          ),
+          Uri.parse(ApiConfig.shopkeeperProfileUrl),
         );
 
         // Add personal profile fields
@@ -363,7 +359,6 @@ class _ProfileDetailFillingPageState extends State<ProfileDetailFillingPage> {
                   const SizedBox(height: 20),
 
                   // Profile image picker
-                 
                   GestureDetector(
                     onTap: _pickImage,
                     child: Stack(
@@ -428,7 +423,7 @@ class _ProfileDetailFillingPageState extends State<ProfileDetailFillingPage> {
                     controller: _nameController,
                     decoration: InputDecoration(
                       labelText: appLanguage.get('name'),
-                      hintText: appLanguage.get('enter_full_name'),
+                       hintText: appLanguage.get('enter_full_name'),
                       prefixIcon: const Icon(
                         Icons.person_outline,
                         color: AppColors.secondaryBlue,
@@ -464,16 +459,38 @@ class _ProfileDetailFillingPageState extends State<ProfileDetailFillingPage> {
                       if (value == null || value.isEmpty) {
                         return appLanguage.get('phone_required');
                       }
+                      // Basic UK phone validation - check length and starts with valid digits
+                      String cleanPhone = value.replaceAll(
+                        RegExp(r'[^\d]'),
+                        '',
+                      );
+                      if (cleanPhone.length < 10 || cleanPhone.length > 11) {
+                        return 'Enter a valid UK phone number';
+                      }
+                      if (!cleanPhone.startsWith('0') &&
+                          !cleanPhone.startsWith('44')) {
+                        return 'Enter a valid UK phone number';
+                      }
                       return null;
                     },
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
                     decoration: InputDecoration(
                       labelText: appLanguage.get('phone'),
-                      hintText: appLanguage.get('enter_phone'),
-                      prefixIcon: const Icon(
-                        Icons.phone_outlined,
-                        color: AppColors.secondaryBlue,
+                      hintText: '07123456789',
+                      prefixIcon: Container(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('🇬🇧', style: TextStyle(fontSize: 20)),
+                            const SizedBox(width: 8),
+                            const Icon(
+                              Icons.phone_outlined,
+                              color: AppColors.secondaryBlue,
+                            ),
+                          ],
+                        ),
                       ),
                       filled: true,
                       fillColor: Colors.grey[50],
@@ -529,7 +546,7 @@ class _ProfileDetailFillingPageState extends State<ProfileDetailFillingPage> {
                     ),
                   ),
 
-                  const SizedBox(height: 20), 
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
