@@ -7,8 +7,8 @@ import 'package:intl/intl.dart';
 import 'package:taskova_shopkeeper/Model/api_config.dart';
 import 'package:taskova_shopkeeper/view/Job_edit.dart';
 import 'package:taskova_shopkeeper/view/bottom_nav.dart';
-import 'package:taskova_shopkeeper/view/instant_job_post.dart';
-import 'package:taskova_shopkeeper/view/job_post.dart';
+import 'package:taskova_shopkeeper/view/Jobpost/instant_job_post.dart';
+import 'package:taskova_shopkeeper/view/Jobpost/schedulejob_post.dart';
 import 'package:taskova_shopkeeper/view/specific_job_detials.dart';
 
 class MyJobpost extends StatefulWidget {
@@ -33,7 +33,7 @@ class _MyJobpostState extends State<MyJobpost> {
   int applicantsCount = 0;
 
   // Selected business index
-  int _selectedBusinessIndex = 0;
+  final int _selectedBusinessIndex = 0;
 
   @override
   void initState() {
@@ -186,6 +186,8 @@ class _MyJobpostState extends State<MyJobpost> {
         headers: _getAuthHeaders(),
       );
 
+      // Replace the fetchJobsForBusiness method's setState part with this:
+
       if (jobResponse.statusCode == 200) {
         final jobData = json.decode(jobResponse.body);
 
@@ -197,6 +199,17 @@ class _MyJobpostState extends State<MyJobpost> {
             }).toList();
 
         await Future.wait(futures);
+
+        // Sort jobs by created_at date in descending order (latest first)
+        jobData.sort((a, b) {
+          try {
+            final dateA = DateTime.parse(a['created_at'] ?? '');
+            final dateB = DateTime.parse(b['created_at'] ?? '');
+            return dateB.compareTo(dateA); // Descending order (latest first)
+          } catch (e) {
+            return 0; // If parsing fails, keep original order
+          }
+        });
 
         setState(() {
           _jobPosts = jobData;
@@ -254,6 +267,71 @@ class _MyJobpostState extends State<MyJobpost> {
               ),
             ],
           ),
+    );
+  }
+
+  // Add this delete method to your _MyJobpostState class:
+
+  Future<void> _deleteJob(int jobId, String jobTitle) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/api/job-posts/$jobId/manual-delete/'),
+        headers: _getAuthHeaders(),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        // Success - refresh the job list
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Job "$jobTitle" deleted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Refresh jobs list
+        if (_businessData != null && _businessData!['id'] != null) {
+          await fetchJobsForBusiness(_businessData!['id']);
+        }
+      } else {
+        throw Exception('Failed to delete job: ${response.statusCode}');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error deleting job: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // Add this confirmation dialog method:
+  void _showDeleteConfirmation(int jobId, String jobTitle) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Job Post'),
+          content: Text(
+            'Are you sure you want to delete "$jobTitle"? This action cannot be undone.',
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _deleteJob(jobId, jobTitle);
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -491,11 +569,13 @@ class _MyJobpostState extends State<MyJobpost> {
       }
     }
 
+    // Replace the status logic in your _buildJobCard method with this:
+
     Color statusColor = Colors.green;
     String statusText = 'Active';
 
     if (job['status'] != null) {
-      switch (job['is'].toString().toLowerCase()) {
+      switch (job['status'].toString().toLowerCase()) {
         case 'active':
           statusColor = Colors.green;
           statusText = 'Active';
@@ -512,9 +592,22 @@ class _MyJobpostState extends State<MyJobpost> {
           statusColor = Colors.blue;
           statusText = 'Pending';
           break;
+        case 'inactive':
+          statusColor = Colors.grey;
+          statusText = 'Inactive';
+          break;
         default:
           statusColor = Colors.grey;
           statusText = job['status'].toString();
+      }
+    } else {
+      // Fallback to is_active field if status is null
+      if (job['is_active'] == true) {
+        statusColor = Colors.green;
+        statusText = 'Active';
+      } else {
+        statusColor = Colors.red;
+        statusText = 'Inactive';
       }
     }
 
@@ -668,30 +761,21 @@ class _MyJobpostState extends State<MyJobpost> {
                   children: [
                     Expanded(
                       child: OutlinedButton.icon(
-                        icon: const Icon(Icons.edit, size: 16),
-                        label: const Text('Edit'),
+                        icon: const Icon(
+                          Icons.delete,
+                          size: 16,
+                          color: Colors.red,
+                        ),
+                        label: const Text(
+                          'Delete',
+                          style: TextStyle(color: Colors.red),
+                        ),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 10),
+                          side: const BorderSide(color: Colors.red),
                         ),
-                        onPressed: () async {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) => EditJobPage(
-                                    jobId: job['id'],
-                                    authToken: _authToken!,
-                                  ),
-                            ),
-                          );
-
-                          // If job was updated successfully, refresh the job list
-                          if (result == true) {
-                            if (_businessData != null &&
-                                _businessData!['id'] != null) {
-                              await fetchJobsForBusiness(_businessData!['id']);
-                            }
-                          }
+                        onPressed: () {
+                          _showDeleteConfirmation(job['id'], jobTitle);
                         },
                       ),
                     ),

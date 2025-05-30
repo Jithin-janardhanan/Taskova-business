@@ -1,9 +1,6 @@
-
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,7 +13,8 @@ import 'package:taskova_shopkeeper/auth/google.dart';
 import 'package:taskova_shopkeeper/auth/profile_page.dart';
 import 'package:taskova_shopkeeper/language/language_selection_screen.dart';
 import 'package:taskova_shopkeeper/view/bottom_nav.dart';
-
+import 'package:taskova_shopkeeper/view/business_detial_filling.dart';
+import 'package:taskova_shopkeeper/view/verification.dart';
 import 'applelogi.dart';
 import '../language/language_provider.dart';
 import 'registration.dart';
@@ -40,6 +38,7 @@ class _LoginState extends State<Login> {
   // Create instances of auth services
   final GoogleAuthService _googleAuthService = GoogleAuthService();
   final AppleAuthService _appleAuthService = AppleAuthService();
+  
 
   @override
   void initState() {
@@ -193,11 +192,14 @@ class _LoginState extends State<Login> {
               (Route<dynamic> route) => false,
             );
           } else {
-            await checkProfileStatusAndNavigate(
-              context: context,
-              profileFillingPage: ProfileDetailFillingPage(),
-              homePage: HomePageWithBottomNav(),
-            );
+           await checkAndNavigateBasedOnStatus(
+  context: context,
+  profileFillingPage: ProfileDetailFillingPage(),
+  businessFillingPage: BusinessFormPage(),
+  verificationPendingPage: VerificationPendingPage(),
+  homePage: HomePageWithBottomNav(),
+);
+
           }
         } else {
           setState(() {

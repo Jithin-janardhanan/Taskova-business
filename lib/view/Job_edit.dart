@@ -8,8 +8,7 @@ class EditJobPage extends StatefulWidget {
   final int jobId;
   final String authToken;
 
-  const EditJobPage({Key? key, required this.jobId, required this.authToken})
-    : super(key: key);
+  const EditJobPage({super.key, required this.jobId, required this.authToken});
 
   @override
   _EditJobPageState createState() => _EditJobPageState();
@@ -528,10 +527,12 @@ class _EditJobPageState extends State<EditJobPage> {
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
-                      if (value?.trim().isEmpty == true)
+                      if (value?.trim().isEmpty == true) {
                         return 'Hourly rate is required';
-                      if (double.tryParse(value!) == null)
+                      }
+                      if (double.tryParse(value!) == null) {
                         return 'Enter a valid number';
+                      }
                       return null;
                     },
                   ),
@@ -549,10 +550,12 @@ class _EditJobPageState extends State<EditJobPage> {
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
-                      if (value?.trim().isEmpty == true)
+                      if (value?.trim().isEmpty == true) {
                         return 'Delivery rate is required';
-                      if (double.tryParse(value!) == null)
+                      }
+                      if (double.tryParse(value!) == null) {
                         return 'Enter a valid number';
+                      }
                       return null;
                     },
                   ),

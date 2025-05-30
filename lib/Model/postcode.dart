@@ -11,11 +11,11 @@ class PostcodeSearchWidget extends StatefulWidget {
   final TextEditingController? postcodeController;
 
   const PostcodeSearchWidget({
-    Key? key,
+    super.key,
     required this.onAddressSelected,
     this.placeholderText = 'Enter postcode',
     this.postcodeController,
-  }) : super(key: key);
+  });
 
   @override
   _PostcodeSearchWidgetState createState() => _PostcodeSearchWidgetState();

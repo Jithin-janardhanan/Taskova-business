@@ -11,17 +11,21 @@ class ProfileStatus {
   final bool isApproved;
   final String role;
   final bool isEmailVerified;
+  final bool isBusinessComplete;
+
 
   ProfileStatus({
     required this.isProfileComplete,
     required this.isApproved,
     required this.role,
     required this.isEmailVerified,
+     required this.isBusinessComplete,
   });
 
   factory ProfileStatus.fromJson(Map<String, dynamic> json) {
     return ProfileStatus(
       isProfileComplete: json['is_profile_complete'] ?? false,
+      isBusinessComplete: json['is_business_complete'] ?? false,
       isApproved: json['is_approved'] ?? false,
       role: json['role'] ?? "",
       isEmailVerified: json['is_email_verified'] ?? false,
@@ -87,16 +91,17 @@ Future<ProfileStatus?> getProfileStatus() async {
 /// @param context The BuildContext for navigation
 /// @param profileFillingPage The page to navigate to if profile is not complete
 /// @param homePage The page to navigate to if profile is complete
-Future<void> checkProfileStatusAndNavigate({
+Future<void> checkAndNavigateBasedOnStatus({
   required BuildContext context,
   required Widget profileFillingPage,
+  required Widget businessFillingPage,
+  required Widget verificationPendingPage,
   required Widget homePage,
 }) async {
   try {
     final profileStatus = await getProfileStatus();
 
     if (profileStatus == null) {
-      // Handle error or token issues - stay on current page
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Failed to fetch profile status'),
@@ -106,27 +111,39 @@ Future<void> checkProfileStatusAndNavigate({
       return;
     }
 
-    // Navigate based on profile completion status
-    if (profileStatus.isProfileComplete) {
+    if (!profileStatus.isProfileComplete) {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => homePage),
-        (Route<dynamic> route) => false,
+        MaterialPageRoute(builder: (context) => profileFillingPage),
+        (route) => false,
+      );
+    } else if (!profileStatus.isBusinessComplete) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => businessFillingPage),
+        (route) => false,
+      );
+    } else if (!profileStatus.isApproved) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => verificationPendingPage),
+        (route) => false,
       );
     } else {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => profileFillingPage),
-        (Route<dynamic> route) => false,
+        MaterialPageRoute(builder: (context) => homePage),
+        (route) => false,
       );
     }
   } catch (e) {
-    print('Error checking profile status: $e');
+    print('Navigation error: $e');
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Error checking profile status'),
+        content: Text('Error during status check'),
         backgroundColor: Colors.red,
       ),
     );
   }
 }
+

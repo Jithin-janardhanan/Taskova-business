@@ -20,7 +20,7 @@ void main() {
     await tester.pumpWidget(
       ChangeNotifierProvider(
         create: (_) => AppLanguage(),
-        child: const MyApp(hasSelectedLanguage: false),
+        child:  MyApp(hasSelectedLanguage: false,isLoggedIn: false),
       ),
     );
 
@@ -35,7 +35,7 @@ void main() {
     await tester.pumpWidget(
       ChangeNotifierProvider(
         create: (_) => AppLanguage(),
-        child: const MyApp(hasSelectedLanguage: true),
+        child: const MyApp(hasSelectedLanguage: true,isLoggedIn: true),
       ),
     );
 

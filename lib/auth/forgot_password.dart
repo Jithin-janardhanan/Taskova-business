@@ -6,7 +6,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:taskova_shopkeeper/Model/api_config.dart';
-import 'package:taskova_shopkeeper/view/reset_password.dart';
+import 'package:taskova_shopkeeper/auth/reset_password.dart';
 
 
 class ForgotPasswordScreen extends StatefulWidget {

@@ -9,6 +9,8 @@ import 'package:taskova_shopkeeper/Model/profile_status.dart';
 import 'package:taskova_shopkeeper/auth/profile_page.dart';
 import 'package:taskova_shopkeeper/auth/registration.dart';
 import 'package:taskova_shopkeeper/view/bottom_nav.dart';
+import 'package:taskova_shopkeeper/view/business_detial_filling.dart';
+import 'package:taskova_shopkeeper/view/verification.dart';
 import '../language/language_provider.dart';
 
 class AppleAuthService {
@@ -151,11 +153,14 @@ class AppleAuthService {
             (Route<dynamic> route) => false,
           );
         } else {
-          await checkProfileStatusAndNavigate(
-            context: context,
-            profileFillingPage: ProfileDetailFillingPage(),
-            homePage: HomePageWithBottomNav(),
-          );
+          await checkAndNavigateBasedOnStatus(
+  context: context,
+  profileFillingPage: ProfileDetailFillingPage(),
+  businessFillingPage: BusinessFormPage(),
+  verificationPendingPage: VerificationPendingPage(),
+  homePage: HomePageWithBottomNav(),
+);
+
         }
 
       } else {

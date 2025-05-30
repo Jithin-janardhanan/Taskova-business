@@ -402,6 +402,21 @@ class _ScheduleJobPostState extends State<ScheduleJobPost> {
     }
 
     // At least one selected benefit
+    // final selectedBenefits =
+    //     List.generate(
+    //       _selectedComplimentary.length,
+    //       (index) =>
+    //           _selectedComplimentary[index]
+    //               ? _complimentaryOptions[index]
+    //               : null,
+    //     ).where((item) => item != null).toList();
+
+    // if (selectedBenefits.isEmpty) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(content: Text('Select at least one benefit')),
+    //   );
+    //   return;
+    // }
     final selectedBenefits =
         List.generate(
           _selectedComplimentary.length,
@@ -409,14 +424,7 @@ class _ScheduleJobPostState extends State<ScheduleJobPost> {
               _selectedComplimentary[index]
                   ? _complimentaryOptions[index]
                   : null,
-        ).where((item) => item != null).toList();
-
-    if (selectedBenefits.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Select at least one benefit')),
-      );
-      return;
-    }
+        ).whereType<String>().toList(); // Safer than item != null
 
     // Create job posting data
     final Map<String, dynamic> jobPostingData = {
@@ -715,7 +723,7 @@ class _ScheduleJobPostState extends State<ScheduleJobPost> {
 
                         // Schedule Settings card
                         _buildCard(
-                          title: 'Schedule Settings',
+                          title: 'Working hours',
                           icon: Icons.schedule,
                           color: AppColors.accentGreen,
                           content: Column(
@@ -737,7 +745,12 @@ class _ScheduleJobPostState extends State<ScheduleJobPost> {
                                       ),
                                       trailing: Icon(
                                         Icons.calendar_today,
-                                        color: AppColors.accentGreen,
+                                        color: const Color.fromARGB(
+                                          255,
+                                          16,
+                                          126,
+                                          185,
+                                        ),
                                       ),
                                       onTap: _toggleCalendar,
                                     ),
@@ -749,9 +762,14 @@ class _ScheduleJobPostState extends State<ScheduleJobPost> {
                                       color: AppColors.accentGreen,
                                     ),
                                     label: Text(
-                                      'Today',
+                                      'Reset',
                                       style: TextStyle(
-                                        color: AppColors.accentGreen,
+                                        color: const Color.fromARGB(
+                                          255,
+                                          13,
+                                          104,
+                                          202,
+                                        ),
                                       ),
                                     ),
                                     style: TextButton.styleFrom(

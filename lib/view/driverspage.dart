@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskova_shopkeeper/Model/api_config.dart';
 
 class Driver {
@@ -63,12 +64,26 @@ class Driver {
 }
 
 class DriverService {
-  String? _authToken;
-
-  static const String token = '';
+  // Method to get token from SharedPreferences
+  static Future<String?> _getAuthToken() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString('access_token');
+    } catch (e) {
+      print('Error getting auth token: $e');
+      return null;
+    }
+  }
 
   static Future<List<Driver>> fetchDrivers() async {
     try {
+      // Get token from SharedPreferences
+      final token = await _getAuthToken();
+
+      if (token == null || token.isEmpty) {
+        throw Exception('Authentication token not found. Please login again.');
+      }
+
       final response = await http.get(
         Uri.parse(ApiConfig.fulldriverlist),
         headers: {
@@ -80,6 +95,8 @@ class DriverService {
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         return data.map((json) => Driver.fromJson(json)).toList();
+      } else if (response.statusCode == 401) {
+        throw Exception('Authentication failed. Please login again.');
       } else {
         throw Exception('Failed to load drivers: ${response.reasonPhrase}');
       }

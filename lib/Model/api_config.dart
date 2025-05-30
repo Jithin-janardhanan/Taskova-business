@@ -77,7 +77,8 @@ class ApiConfig {
   // Profile endpoints
   static String get driverProfileUrl => '$baseUrl/api/driver-profile/';
   static String get driverDocumentUrl => '$baseUrl/api/driver-documents/';
-  static String get shopkeeperProfileUrl => '$baseUrl/api/shopkeeper/profile/';
+  static String get 
+  shopkeeperProfileUrl => '$baseUrl/api/shopkeeper/profile/';
   static String get profileStatusUrl => '$baseUrl/api/profile-status/';
 
   // Business endpoints

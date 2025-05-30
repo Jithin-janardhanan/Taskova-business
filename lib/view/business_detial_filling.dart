@@ -109,7 +109,10 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
       }
       final fileSize = await _businessImage!.length();
       if (fileSize > 5 * 1024 * 1024) {
-        _showSnackbar("Image is too large. Please select an image under 5MB.", true);
+        _showSnackbar(
+          "Image is too large. Please select an image under 5MB.",
+          true,
+        );
         return false;
       }
       final fileExtension = _businessImage!.path.split('.').last.toLowerCase();
@@ -142,7 +145,10 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
           'Content-Type': 'multipart/form-data',
         };
 
-        var request = http.MultipartRequest('POST', Uri.parse(ApiConfig.regiserBusiness));
+        var request = http.MultipartRequest(
+          'POST',
+          Uri.parse(ApiConfig.regiserBusiness),
+        );
         request.fields.addAll({
           'name': _businessNameController.text,
           'address': _businessAddressController.text,
@@ -156,10 +162,9 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
         });
 
         if (_businessImage != null) {
-          request.files.add(await http.MultipartFile.fromPath(
-            'image',
-            _businessImage!.path,
-          ));
+          request.files.add(
+            await http.MultipartFile.fromPath('image', _businessImage!.path),
+          );
         }
 
         request.headers.addAll(headers);
@@ -190,15 +195,20 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
           );
         } else {
           final errorResponse = await response.stream.bytesToString();
-          String errorMessage = "Failed to create business profile. Please try again.";
+          String errorMessage =
+              "Failed to create business profile. Please try again.";
           try {
             final errorData = json.decode(errorResponse);
-            errorMessage = errorData['error'] ?? errorData['message'] ?? errorMessage;
+            errorMessage =
+                errorData['error'] ?? errorData['message'] ?? errorMessage;
           } catch (e) {
             // Handle non-JSON response
           }
           _showSnackbar(
-            await appLanguage.translate(errorMessage, appLanguage.currentLanguage),
+            await appLanguage.translate(
+              errorMessage,
+              appLanguage.currentLanguage,
+            ),
             true,
           );
         }
@@ -206,13 +216,17 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
         setState(() {
           _isLoading = false;
         });
-        String errorMessage = "Connection error. Please check your internet connection.";
+        String errorMessage =
+            "Connection error. Please check your internet connection.";
         if (e is TimeoutException) {
           errorMessage = "Request timed out. Please try again.";
         }
         final appLanguage = Provider.of<AppLanguage>(context, listen: false);
         _showSnackbar(
-          await appLanguage.translate(errorMessage, appLanguage.currentLanguage),
+          await appLanguage.translate(
+            errorMessage,
+            appLanguage.currentLanguage,
+          ),
           true,
         );
       }
@@ -239,7 +253,10 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
         child: SafeArea(
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 16.0,
+              ),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -262,20 +279,21 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
                                 width: 2,
                               ),
                             ),
-                            child: _businessImage != null
-                                ? ClipOval(
-                                    child: Image.file(
-                                      _businessImage!,
-                                      width: 120,
-                                      height: 120,
-                                      fit: BoxFit.cover,
+                            child:
+                                _businessImage != null
+                                    ? ClipOval(
+                                      child: Image.file(
+                                        _businessImage!,
+                                        width: 120,
+                                        height: 120,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    )
+                                    : Icon(
+                                      Icons.business,
+                                      size: 60,
+                                      color: Colors.grey[400],
                                     ),
-                                  )
-                                : Icon(
-                                    Icons.business,
-                                    size: 60,
-                                    color: Colors.grey[400],
-                                  ),
                           ),
                           Positioned(
                             bottom: 0,
@@ -324,9 +342,15 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
                       },
                       controller: _businessNameController,
                       decoration: InputDecoration(
-                        labelText: appLanguage.get('business_name') ?? 'Business Name',
-                        hintText: appLanguage.get('enter_business_name') ?? 'Enter your business name',
-                        prefixIcon: const Icon(Icons.business, color: AppColors.secondaryBlue),
+                        labelText:
+                            appLanguage.get('business_name') ?? 'Business Name',
+                        hintText:
+                            appLanguage.get('enter_business_name') ??
+                            'Enter your business name',
+                        prefixIcon: const Icon(
+                          Icons.business,
+                          color: AppColors.secondaryBlue,
+                        ),
                         filled: true,
                         fillColor: Colors.grey[50],
                         border: OutlineInputBorder(
@@ -335,11 +359,17 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.lightBlue, width: 1),
+                          borderSide: const BorderSide(
+                            color: AppColors.lightBlue,
+                            width: 1,
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.primaryBlue, width: 2),
+                          borderSide: const BorderSide(
+                            color: AppColors.primaryBlue,
+                            width: 2,
+                          ),
                         ),
                       ),
                     ),
@@ -348,10 +378,12 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
                     TextFormField(
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return appLanguage.get('email_required') ?? 'Email is required';
+                          return appLanguage.get('email_required') ??
+                              'Email is required';
                         }
                         if (!value.contains('@')) {
-                          return appLanguage.get('valid_email_required') ?? 'Please enter a valid email';
+                          return appLanguage.get('valid_email_required') ??
+                              'Please enter a valid email';
                         }
                         return null;
                       },
@@ -359,8 +391,13 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                         labelText: appLanguage.get('email') ?? 'Email',
-                        hintText: appLanguage.get('enter_email') ?? 'Enter business email',
-                        prefixIcon: const Icon(Icons.email_outlined, color: AppColors.secondaryBlue),
+                        hintText:
+                            appLanguage.get('enter_email') ??
+                            'Enter business email',
+                        prefixIcon: const Icon(
+                          Icons.email_outlined,
+                          color: AppColors.secondaryBlue,
+                        ),
                         filled: true,
                         fillColor: Colors.grey[50],
                         border: OutlineInputBorder(
@@ -369,11 +406,17 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.lightBlue, width: 1),
+                          borderSide: const BorderSide(
+                            color: AppColors.lightBlue,
+                            width: 1,
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.primaryBlue, width: 2),
+                          borderSide: const BorderSide(
+                            color: AppColors.primaryBlue,
+                            width: 2,
+                          ),
                         ),
                       ),
                     ),
@@ -382,16 +425,41 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
                     TextFormField(
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return appLanguage.get('contact_number_required') ?? 'Contact number is required';
+                          return appLanguage.get('phone_required');
+                        }
+                        // Basic UK phone validation - check length and starts with valid digits
+                        String cleanPhone = value.replaceAll(
+                          RegExp(r'[^\d]'),
+                          '',
+                        );
+                        if (cleanPhone.length < 10 || cleanPhone.length > 11) {
+                          return 'Enter a valid UK phone number';
+                        }
+                        if (!cleanPhone.startsWith('0') &&
+                            !cleanPhone.startsWith('44')) {
+                          return 'Enter a valid UK phone number';
                         }
                         return null;
                       },
                       controller: _contactNumberController,
                       keyboardType: TextInputType.phone,
                       decoration: InputDecoration(
-                        labelText: appLanguage.get('contact_number') ?? 'Contact Number',
-                        hintText: appLanguage.get('enter_contact_number') ?? 'Enter business contact number',
-                        prefixIcon: const Icon(Icons.phone_outlined, color: AppColors.secondaryBlue),
+                        labelText: appLanguage.get('phone'),
+                        hintText: '07123456789',
+                        prefixIcon: Container(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('🇬🇧', style: TextStyle(fontSize: 20)),
+                              const SizedBox(width: 8),
+                              const Icon(
+                                Icons.phone_outlined,
+                                color: AppColors.secondaryBlue,
+                              ),
+                            ],
+                          ),
+                        ),
                         filled: true,
                         fillColor: Colors.grey[50],
                         border: OutlineInputBorder(
@@ -400,11 +468,17 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.lightBlue, width: 1),
+                          borderSide: const BorderSide(
+                            color: AppColors.lightBlue,
+                            width: 1,
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.primaryBlue, width: 2),
+                          borderSide: const BorderSide(
+                            color: AppColors.primaryBlue,
+                            width: 2,
+                          ),
                         ),
                       ),
                     ),
@@ -413,25 +487,34 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
                     PostcodeSearchWidget(
                       postcodeController: _postcodeController,
                       onAddressSelected: _onAddressSelected,
-                      placeholderText: appLanguage.get('postcode') ?? 'Postcode',
+                      placeholderText:
+                          appLanguage.get('postcode') ?? 'Postcode',
                     ),
                     const SizedBox(height: 20),
                     // Business Address field
                     TextFormField(
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return appLanguage.get('business_address_required') ?? 'Business address is required';
+                          return appLanguage.get('business_address_required') ??
+                              'Business address is required';
                         }
                         return null;
                       },
                       controller: _businessAddressController,
                       maxLines: 2,
                       decoration: InputDecoration(
-                        labelText: appLanguage.get('business_address') ?? 'Business Address',
-                        hintText: appLanguage.get('enter_business_address') ?? 'Enter your business address',
+                        labelText:
+                            appLanguage.get('business_address') ??
+                            'Business Address',
+                        hintText:
+                            appLanguage.get('enter_business_address') ??
+                            'Enter your business address',
                         prefixIcon: const Padding(
                           padding: EdgeInsets.only(bottom: 20),
-                          child: Icon(Icons.location_on_outlined, color: AppColors.secondaryBlue),
+                          child: Icon(
+                            Icons.location_on_outlined,
+                            color: AppColors.secondaryBlue,
+                          ),
                         ),
                         filled: true,
                         fillColor: Colors.grey[50],
@@ -441,40 +524,54 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.lightBlue, width: 1),
+                          borderSide: const BorderSide(
+                            color: AppColors.lightBlue,
+                            width: 1,
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.primaryBlue, width: 2),
+                          borderSide: const BorderSide(
+                            color: AppColors.primaryBlue,
+                            width: 2,
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 20),
                     // Is Active switch
-                    Container(
-                      padding: const EdgeInsets.symmetric(vertical: 5),
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[50],
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.lightBlue, width: 1),
-                      ),
-                      child: SwitchListTile(
-                        title: Text(
-                          appLanguage.get('active') ?? 'Active',
-                          style: const TextStyle(fontSize: 14, color: AppColors.secondaryBlue),
-                        ),
-                        value: _isActive,
-                        onChanged: (bool value) {
-                          setState(() {
-                            _isActive = value;
-                          });
-                        },
-                        activeColor: AppColors.primaryBlue,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                      ),
-                    ),
-                    const SizedBox(height: 40),
+                    // Container(
+                    //   padding: const EdgeInsets.symmetric(vertical: 5),
+                    //   height: 60,
+                    //   decoration: BoxDecoration(
+                    //     color: Colors.grey[50],
+                    //     borderRadius: BorderRadius.circular(12),
+                    //     border: Border.all(
+                    //       color: AppColors.lightBlue,
+                    //       width: 1,
+                    //     ),
+                    //   ),
+                    //   child: SwitchListTile(
+                    //     title: Text(
+                    //       appLanguage.get('active') ?? 'Active',
+                    //       style: const TextStyle(
+                    //         fontSize: 14,
+                    //         color: AppColors.secondaryBlue,
+                    //       ),
+                    //     ),
+                    //     value: _isActive,
+                    //     onChanged: (bool value) {
+                    //       setState(() {
+                    //         _isActive = value;
+                    //       });
+                    //     },
+                    //     activeColor: AppColors.primaryBlue,
+                    //     contentPadding: const EdgeInsets.symmetric(
+                    //       horizontal: 16,
+                    //     ),
+                    //   ),
+                    // ),
+                    // const SizedBox(height: 40),
                     // Submit button
                     SizedBox(
                       width: double.infinity,
@@ -489,12 +586,19 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: _isLoading
-                            ? const CircularProgressIndicator(color: Colors.white)
-                            : Text(
-                                appLanguage.get('save business') ?? 'Save Business',
-                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                              ),
+                        child:
+                            _isLoading
+                                ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                                : Text(
+                                  appLanguage.get('save business') ??
+                                      'Save Business',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                       ),
                     ),
                     const SizedBox(height: 20),
