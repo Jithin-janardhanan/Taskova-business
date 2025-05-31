@@ -165,7 +165,7 @@ class _LoginState extends State<Login> {
           // Extract all necessary data from response
           String accessToken = responseData['access'] ?? "";
           String refreshToken = responseData['refresh'] ?? "";
-          String name = responseData['name'] ?? "User";
+          String name = responseData['name'] ?? "";
           String userId =
               responseData['user_id']?.toString() ??
               responseData['id']?.toString() ??

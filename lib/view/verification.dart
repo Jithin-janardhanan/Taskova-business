@@ -35,7 +35,7 @@ class VerificationPendingPage extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () { 
                   // Optionally add logic like refresh status or logout
                 },
                 child: const Text('Refresh Status'),
