@@ -601,57 +601,57 @@ class _ScheduleJobPostState extends State<ScheduleJobPost> {
                         ),
 
                         // Business selection card
-                        _buildCard(
-                          title: 'Select Business',
-                          icon: Icons.business,
-                          color: AppColors.primaryBlue,
-                          content:
-                              _isLoadingBusinesses
-                                  ? const Center(
-                                    child: CircularProgressIndicator(),
-                                  )
-                                  : _businesses.isEmpty
-                                  ? const Text('No businesses found')
-                                  : DropdownButtonFormField<int>(
-                                    decoration: InputDecoration(
-                                      labelText: 'Business',
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.white,
-                                      labelStyle: TextStyle(
-                                        color: AppColors.primaryBlue,
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
-                                          color: AppColors.primaryBlue,
-                                          width: 2,
-                                        ),
-                                      ),
-                                    ),
-                                    value: _selectedBusinessId,
-                                    items:
-                                        _businesses.map((business) {
-                                          return DropdownMenuItem<int>(
-                                            value: business['id'],
-                                            child: Text(business['name']),
-                                          );
-                                        }).toList(),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _selectedBusinessId = value;
-                                      });
-                                    },
-                                    validator: (value) {
-                                      if (value == null) {
-                                        return 'Please select a business';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                        ),
+                        // _buildCard(
+                        //   title: 'Select Business',
+                        //   icon: Icons.business,
+                        //   color: AppColors.primaryBlue,
+                        //   content:
+                        //       _isLoadingBusinesses
+                        //           ? const Center(
+                        //             child: CircularProgressIndicator(),
+                        //           )
+                        //           : _businesses.isEmpty
+                        //           ? const Text('No businesses found')
+                        //           : DropdownButtonFormField<int>(
+                        //             decoration: InputDecoration(
+                        //               labelText: 'Business',
+                        //               border: OutlineInputBorder(
+                        //                 borderRadius: BorderRadius.circular(12),
+                        //               ),
+                        //               filled: true,
+                        //               fillColor: Colors.white,
+                        //               labelStyle: TextStyle(
+                        //                 color: AppColors.primaryBlue,
+                        //               ),
+                        //               focusedBorder: OutlineInputBorder(
+                        //                 borderRadius: BorderRadius.circular(12),
+                        //                 borderSide: BorderSide(
+                        //                   color: AppColors.primaryBlue,
+                        //                   width: 2,
+                        //                 ),
+                        //               ),
+                        //             ),
+                        //             value: _selectedBusinessId,
+                        //             items:
+                        //                 _businesses.map((business) {
+                        //                   return DropdownMenuItem<int>(
+                        //                     value: business['id'],
+                        //                     child: Text(business['name']),
+                        //                   );
+                        //                 }).toList(),
+                        //             onChanged: (value) {
+                        //               setState(() {
+                        //                 _selectedBusinessId = value;
+                        //               });
+                        //             },
+                        //             validator: (value) {
+                        //               if (value == null) {
+                        //                 return 'Please select a business';
+                        //               }
+                        //               return null;
+                        //             },
+                        //           ),
+                        // ),
 
                         // Job Posting Details card
                         _buildCard(

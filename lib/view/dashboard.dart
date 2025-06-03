@@ -241,23 +241,25 @@ class _DashboardState extends State<Dashboard> {
         appBar: AppBar(
           elevation: 0,
           backgroundColor: const Color.fromARGB(255, 63, 105, 230),
-          title: Text(
-            "Taskova",
-            style: TextStyle(
-              color: Colors.grey[800],
-              fontWeight: FontWeight.bold,
-              fontSize: 24,
-            ),
-          ),
-          actions: [
-            Container(
-              margin: EdgeInsets.only(right: 16),
-              child: CircleAvatar(
-                backgroundColor: Colors.orange.withOpacity(0.1),
-                child: Icon(Icons.person, color: Colors.orange),
+          title: Center(
+            child: Text(
+              "Taskova",
+              style: TextStyle(
+                color: const Color.fromARGB(255, 245, 244, 244),
+                fontWeight: FontWeight.bold,
+                fontSize: 24,
               ),
             ),
-          ],
+          ),
+          // actions: [
+          //   Container(
+          //     margin: EdgeInsets.only(right: 16),
+          //     child: CircleAvatar(
+          //       backgroundColor: Colors.orange.withOpacity(0.1),
+          //       child: Icon(Icons.person, color: Colors.orange),
+          //     ),
+          //   ),
+          // ],
         ),
         body: RefreshIndicator(
           onRefresh: () async {
@@ -377,7 +379,7 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Widget _buildStatCard(
-    String title,
+    String title, 
     String value,
     IconData icon,
     Color color,

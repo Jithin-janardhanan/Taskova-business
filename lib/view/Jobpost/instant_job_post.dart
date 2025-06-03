@@ -107,11 +107,7 @@ class _InstatJobPostState extends State<InstatJobPost> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to load authentication data: ${e.toString()}'),
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('')));
     }
   }
 
@@ -413,10 +409,11 @@ class _InstatJobPostState extends State<InstatJobPost> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pushAndRemoveUntil(
-  MaterialPageRoute(builder: (context) => HomePageWithBottomNav()),
-  (Route<dynamic> route) => false,
-);
- 
+                  MaterialPageRoute(
+                    builder: (context) => HomePageWithBottomNav(),
+                  ),
+                  (Route<dynamic> route) => false,
+                );
               },
               child: Text(
                 'OK',
@@ -451,7 +448,7 @@ class _InstatJobPostState extends State<InstatJobPost> {
             ),
           ),
           content: Text(
-            'Failed to post job: $errorMessage',
+            'Please fill the form complely and try again.',
             style: GoogleFonts.poppins(fontSize: 14, color: Colors.black54),
           ),
           actions: [
@@ -979,111 +976,6 @@ class _InstatJobPostState extends State<InstatJobPost> {
       ),
     );
   }
-
-  // Widget _buildBusinessSelector() {
-  //   return Column(
-  //     crossAxisAlignment: CrossAxisAlignment.start,
-  //     children: [
-  //       Text(
-  //         'Select Business',
-  //         style: GoogleFonts.poppins(
-  //           fontSize: 14,
-  //           color: Colors.black54,
-  //           fontWeight: FontWeight.w400,
-  //         ),
-  //       ),
-  //       const SizedBox(height: 8),
-  //       _isLoadingBusinesses
-  //           ? Container(
-  //             height: 56,
-  //             padding: const EdgeInsets.all(12),
-  //             decoration: BoxDecoration(
-  //               color: Colors.grey[50],
-  //               borderRadius: BorderRadius.circular(8),
-  //               border: Border.all(color: Colors.grey.shade300),
-  //             ),
-  //             child: const Center(
-  //               child: CircularProgressIndicator(
-  //                 strokeWidth: 2,
-  //                 color: Colors.blue,
-  //               ),
-  //             ),
-  //           )
-  //           : _businesses.isEmpty
-  //           ? Container(
-  //             height: 56,
-  //             padding: const EdgeInsets.all(12),
-  //             decoration: BoxDecoration(
-  //               color: Colors.grey[50],
-  //               borderRadius: BorderRadius.circular(8),
-  //               border: Border.all(color: Colors.grey.shade300),
-  //             ),
-  //             child: Center(
-  //               child: Text(
-  //                 'No businesses available',
-  //                 style: GoogleFonts.poppins(
-  //                   fontSize: 14,
-  //                   color: Colors.black54,
-  //                 ),
-  //               ),
-  //             ),
-  //           )
-  //           : DropdownButtonFormField<int>(
-  //             value: _selectedBusinessId,
-  //             decoration: InputDecoration(
-  //               prefixIcon: Icon(
-  //                 FontAwesomeIcons.building,
-  //                 color: Colors.blue.shade600,
-  //                 size: 18,
-  //               ),
-  //               border: OutlineInputBorder(
-  //                 borderRadius: BorderRadius.circular(8),
-  //                 borderSide: BorderSide(color: Colors.grey.shade300),
-  //               ),
-  //               enabledBorder: OutlineInputBorder(
-  //                 borderRadius: BorderRadius.circular(8),
-  //                 borderSide: BorderSide(color: Colors.grey.shade300),
-  //               ),
-  //               focusedBorder: OutlineInputBorder(
-  //                 borderRadius: BorderRadius.circular(8),
-  //                 borderSide: BorderSide(color: Colors.blue.shade600, width: 2),
-  //               ),
-  //               filled: true,
-  //               fillColor: Colors.grey[50],
-  //               contentPadding: const EdgeInsets.symmetric(
-  //                 horizontal: 12,
-  //                 vertical: 14,
-  //               ),
-  //             ),
-  //             style: GoogleFonts.poppins(fontSize: 14, color: Colors.black87),
-  //             items:
-  //                 _businesses.map<DropdownMenuItem<int>>((business) {
-  //                   return DropdownMenuItem<int>(
-  //                     value: business['id'],
-  //                     child: Text(
-  //                       business['name'] ?? 'Unknown Business',
-  //                       style: GoogleFonts.poppins(
-  //                         fontSize: 14,
-  //                         color: Colors.black87,
-  //                       ),
-  //                     ),
-  //                   );
-  //                 }).toList(),
-  //             onChanged: (int? newValue) {
-  //               setState(() {
-  //                 _selectedBusinessId = newValue;
-  //               });
-  //             },
-  //             validator: (value) {
-  //               if (value == null) {
-  //                 return 'Please select a business';
-  //               }
-  //               return null;
-  //             },
-  //           ),
-  //     ],
-  //   );
-  // }
 
   Widget _buildPublishButton() {
     return FadeInUp(

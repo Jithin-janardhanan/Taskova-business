@@ -11,6 +11,7 @@ import 'package:taskova_shopkeeper/Model/colors.dart';
 import 'package:taskova_shopkeeper/Model/postcode.dart';
 import 'package:taskova_shopkeeper/language/language_provider.dart';
 import 'package:taskova_shopkeeper/view/bottom_nav.dart';
+import 'package:taskova_shopkeeper/view/verification.dart';
 
 class BusinessFormPage extends StatefulWidget {
   const BusinessFormPage({super.key});
@@ -191,7 +192,7 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
           );
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => HomePageWithBottomNav()),
+            MaterialPageRoute(builder: (context) => VerificationPendingPage()),
           );
         } else {
           final errorResponse = await response.stream.bytesToString();
