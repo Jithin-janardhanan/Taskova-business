@@ -9,7 +9,7 @@ import 'package:taskova_shopkeeper/Model/profile_status.dart';
 import 'package:taskova_shopkeeper/auth/profile_page.dart';
 import 'package:taskova_shopkeeper/auth/registration.dart';
 import 'package:taskova_shopkeeper/view/bottom_nav.dart';
-import 'package:taskova_shopkeeper/view/business_detial_filling.dart';
+import 'package:taskova_shopkeeper/view/busines%20management/business_detial_filling.dart';
 import 'package:taskova_shopkeeper/view/verification.dart';
 import '../language/language_provider.dart';
 

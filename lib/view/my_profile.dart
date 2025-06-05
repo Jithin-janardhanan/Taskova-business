@@ -10,8 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:taskova_shopkeeper/Model/api_config.dart';
 import 'package:taskova_shopkeeper/Model/colors.dart';
 import 'package:taskova_shopkeeper/auth/logout.dart';
-import 'package:taskova_shopkeeper/view/business_detial_filling.dart'
-    show BusinessFormPage;
+import 'package:taskova_shopkeeper/view/busines%20management/business_edit.dart';
 import 'package:taskova_shopkeeper/view/edit_profile.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -38,7 +37,7 @@ class _ProfilePageState extends State<ProfilePage> {
   // Additional user info
   final String _joinDate = 'April 2025';
   final int _tasksCompleted = 0;
-  final bool _emailVerified = false;
+  final bool _emailVerified = true;
   String? _profilePicture;
 
   // Base URL for images
@@ -182,187 +181,29 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  Future<void> _updateProfile() async {
-    if (_nameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Name cannot be empty')));
-      return;
-    }
-
-    try {
-      setState(() => _isLoading = true);
-
-      // First try to update on server if we have token
-      if (_accessToken != null) {
-        try {
-          final response = await http
-              .patch(
-                Uri.parse(
-                  'https://anjalitechfifo.pythonanywhere.com/api/shopkeeper/profile/update/',
-                ),
-                headers: {
-                  'Authorization': 'Bearer $_accessToken',
-                  'Content-Type': 'application/json',
+  // navigation to profile edit page
+  void _navigateToEditProfile() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => ProfileEditPage(
+              initialData: {
+                'personal_profile': {
+                  'name': _name,
+                  'email': _email,
+                  'phone_number': _phoneNumber,
+                  'profile_picture': _profilePicture,
                 },
-                body: jsonEncode({'name': _nameController.text}),
-              )
-              .timeout(const Duration(seconds: 10));
-
-          if (response.statusCode == 200) {
-            final data = jsonDecode(response.body);
-            _name = data['name'] ?? _nameController.text;
-          } else if (response.statusCode == 401) {
-            // Try to refresh token and update again
-            final refreshed = await _refreshToken();
-            if (refreshed) {
-              await _updateProfile();
-              return;
-            }
-          }
-        } catch (e) {
-          // If API update fails, just continue with local update
-          print("API update failed: $e");
-        }
-      }
-
-      // Always update locally regardless of API result
-      _name = _nameController.text;
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('user_name', _name);
-
-      setState(() {
-        _isEditingName = false;
-        _isLoading = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profile updated'),
-          backgroundColor: AppColors.secondaryBlue,
-        ),
-      );
-    } catch (e) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to update profile'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
-  Future<void> _pickImage() async {
-    try {
-      final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-      if (pickedFile != null) {
-        // Here we would upload the image to the server
-        if (_accessToken != null) {
-          try {
-            // Create a multipart request
-            final request = http.MultipartRequest(
-              'PATCH',
-              Uri.parse(
-                'https://anjalitechfifo.pythonanywhere.com/api/shopkeeper/profile/update/',
-              ),
-            );
-
-            // Add headers
-            request.headers.addAll({'Authorization': 'Bearer $_accessToken'});
-
-            // Add the file
-            request.files.add(
-              await http.MultipartFile.fromPath(
-                'profile_picture',
-                pickedFile.path,
-              ),
-            );
-
-            // Send the request
-            final response = await request.send().timeout(
-              const Duration(seconds: 15),
-            );
-
-            if (response.statusCode == 200) {
-              // If successful, update the profile picture locally
-              final responseData = await http.Response.fromStream(response);
-              final data = jsonDecode(responseData.body);
-
-              setState(() {
-                _profilePicture = data['profile_picture'];
-              });
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Profile picture updated successfully!'),
-                  backgroundColor: AppColors.secondaryBlue,
-                ),
-              );
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'Failed to upload profile picture. Please try again.',
-                  ),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
-          } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Error uploading image: ${e.toString()}'),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'You need to be logged in to update your profile picture.',
-              ),
-              backgroundColor: Colors.red,
+              },
             ),
-          );
-        }
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not access gallery'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
-  
-// navigation to profile edit page
-void _navigateToEditProfile() {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => ProfileEditPage(
-        initialData: {
-          'personal_profile': {
-            'name': _name,
-            'email': _email,
-            'phone_number': _phoneNumber,
-            'profile_picture': _profilePicture,
-          }
-        },
       ),
-    ),
-  ).then((updatedData) {
-    if (updatedData != null) {
-      _loadUserData(); // Refresh the profile data
-    }
-  });
-}
+    ).then((updatedData) {
+      if (updatedData != null) {
+        _loadUserData(); // Refresh the profile data
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -453,111 +294,112 @@ void _navigateToEditProfile() {
   }
 
   Widget _buildProfileHeader() {
-  return Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.withOpacity(0.1),
-          spreadRadius: 1,
-          blurRadius: 10,
-          offset: const Offset(0, 1),
-        ),
-      ],
-    ),
-    child: Column(
-      children: [
-        Stack(
-          children: [
-            CircleAvatar(
-              radius: 60,
-              backgroundColor: AppColors.lightBlue,
-              backgroundImage:
-                  _profilePicture != null
-                      ? CachedNetworkImageProvider(
-                        '$_baseImageUrl$_profilePicture',
-                      )
-                      : null,
-              child:
-                  _profilePicture == null
-                      ? const Icon(
-                        Icons.person,
-                        size: 60,
-                        color: AppColors.primaryBlue,
-                      )
-                      : null,
-            ),
-            Positioned(
-              right: 0,
-              bottom: 0,
-              child: InkWell(
-                onTap: _navigateToEditProfile, // Updated to use the new method
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBlue,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                  ),
-                  child: const Icon(
-                    Icons.edit, // Changed from camera_alt to edit
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-
-        // Name (now just displays, editing is done in edit page)
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              _name,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primaryBlue,
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.edit, size: 18),
-              onPressed: _navigateToEditProfile, // Use the method directly
-            ),
-          ],
-        ),
-        Text(_email, style: TextStyle(fontSize: 16, color: Colors.grey[600])),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppColors.lightBlue.withOpacity(0.3),
-            borderRadius: BorderRadius.circular(20),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 10,
+            offset: const Offset(0, 1),
           ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
+        ],
+      ),
+      child: Column(
+        children: [
+          Stack(
             children: [
-              Icon(Icons.verified, size: 16, color: AppColors.secondaryBlue),
-              SizedBox(width: 4),
-              Text(
-                'SHOPKEEPER',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.secondaryBlue,
+              CircleAvatar(
+                radius: 60,
+                backgroundColor: AppColors.lightBlue,
+                backgroundImage:
+                    _profilePicture != null
+                        ? CachedNetworkImageProvider(
+                          '$_baseImageUrl$_profilePicture',
+                        )
+                        : null,
+                child:
+                    _profilePicture == null
+                        ? const Icon(
+                          Icons.person,
+                          size: 60,
+                          color: AppColors.primaryBlue,
+                        )
+                        : null,
+              ),
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: InkWell(
+                  onTap:
+                      _navigateToEditProfile, // Updated to use the new method
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBlue,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: const Icon(
+                      Icons.edit, // Changed from camera_alt to edit
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ),
                 ),
               ),
             ],
           ),
-        ),
-      ],
-    ),
-  );
-}
+          const SizedBox(height: 16),
+
+          // Name (now just displays, editing is done in edit page)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                _name,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryBlue,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.edit, size: 18),
+                onPressed: _navigateToEditProfile, // Use the method directly
+              ),
+            ],
+          ),
+          Text(_email, style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.lightBlue.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.verified, size: 16, color: AppColors.secondaryBlue),
+                SizedBox(width: 4),
+                Text(
+                  'SHOPKEEPER',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.secondaryBlue,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildProfileStats() {
     return Container(
@@ -905,7 +747,9 @@ void _navigateToEditProfile() {
             'Edit your business information',
             onTap: () {
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => BusinessFormPage()),
+                MaterialPageRoute(
+                  builder: (context) => BusinessFetchAndEditPage(),
+                ),
               );
             },
           ),
@@ -1007,4 +851,3 @@ void _navigateToEditProfile() {
     );
   }
 }
-

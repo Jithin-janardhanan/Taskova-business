@@ -574,6 +574,773 @@
 //     );
 //   }
 // }
+// import 'dart:convert';
+// import 'dart:math';
+// import 'package:flutter/material.dart';
+// import 'package:flutter_dotenv/flutter_dotenv.dart';
+// import 'package:http/http.dart' as http;
+// import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:taskova_shopkeeper/view/chat.dart';
+
+// class JobPostDetailsPage extends StatefulWidget {
+//   final int jobId;
+
+//   const JobPostDetailsPage({super.key, required this.jobId});
+
+//   @override
+//   State<JobPostDetailsPage> createState() => _JobPostDetailsPageState();
+// }
+
+// class _JobPostDetailsPageState extends State<JobPostDetailsPage> {
+//   final String baseUrl = dotenv.env['BASE_URL'] ?? '';
+//   bool _isLoading = true;
+//   String? _errorMessage;
+//   Map<String, dynamic>? jobData;
+//   List<dynamic> jobRequests = [];
+//   List<dynamic> filteredJobRequests = [];
+//   String? _authToken;
+
+//   // Business location data
+//   double? businessLatitude;
+//   double? businessLongitude;
+
+//   // Filter variables
+//   String _selectedFilter = 'All';
+//   double _maxDistance = 50.0;
+//   double _minRating = 0.0;
+
+//   // Compact Blue theme colors
+//   static const Color primaryBlue = Color(0xFF1976D2);
+//   static const Color lightBlue = Color(0xFF42A5F5);
+//   static const Color darkBlue = Color(0xFF0D47A1);
+//   static const Color accentBlue = Color(0xFF2196F3);
+//   static const Color backgroundBlue = Color(0xFFF8FBFF);
+//   static const Color cardBlue = Color(0xFFE8F4FD);
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _loadTokenAndFetchJobDetails();
+//   }
+
+//   Future<void> _loadTokenAndFetchJobDetails() async {
+//     final prefs = await SharedPreferences.getInstance();
+//     _authToken = prefs.getString('access_token');
+
+//     if (_authToken == null) {
+//       setState(() {
+//         _errorMessage = "Not logged in.";
+//         _isLoading = false;
+//       });
+//       return;
+//     }
+
+//     await fetchJobDetails();
+//     await fetchJobRequests();
+//   }
+
+//   Map<String, String> _getAuthHeaders() {
+//     return {
+//       'Authorization': 'Bearer $_authToken',
+//       'Content-Type': 'application/json',
+//     };
+//   }
+
+//   Future<void> fetchJobDetails() async {
+//     try {
+//       final response = await http.get(
+//         Uri.parse('$baseUrl/api/job-posts/${widget.jobId}/'),
+//         headers: _getAuthHeaders(),
+//       );
+
+//       if (response.statusCode == 200) {
+//         final data = json.decode(response.body);
+//         setState(() {
+//           jobData = data;
+//           if (data['business_detail'] != null) {
+//             businessLatitude = data['business_detail']['latitude']?.toDouble();
+//             businessLongitude =
+//                 data['business_detail']['longitude']?.toDouble();
+//           }
+//           _isLoading = false;
+//         });
+//       } else {
+//         setState(() {
+//           _errorMessage =
+//               'Failed to load job details. Status code: ${response.statusCode}';
+//           _isLoading = false;
+//         });
+//       }
+//     } catch (e) {
+//       setState(() {
+//         _errorMessage = 'Error: ${e.toString()}';
+//         _isLoading = false;
+//       });
+//     }
+//   }
+
+//   Future<void> fetchJobRequests() async {
+//     try {
+//       var request = http.Request(
+//         'GET',
+//         Uri.parse('$baseUrl/api/job-requests/list/${widget.jobId}'),
+//       );
+//       request.headers.addAll({'Authorization': 'Bearer $_authToken'});
+
+//       http.StreamedResponse response = await request.send();
+
+//       if (response.statusCode == 200) {
+//         String responseBody = await response.stream.bytesToString();
+//         final List<dynamic> requestData = json.decode(responseBody);
+//         setState(() {
+//           jobRequests = requestData;
+//           _applyFilters();
+//         });
+//       } else {
+//         print("Job Requests Error: ${response.reasonPhrase}");
+//       }
+//     } catch (e) {
+//       print("Job Requests Exception: $e");
+//     } finally {
+//       setState(() {
+//         _isLoading = false;
+//       });
+//     }
+//   }
+
+//   double _calculateDistance(
+//     double lat1,
+//     double lon1,
+//     double lat2,
+//     double lon2,
+//   ) {
+//     const double earthRadius = 3959;
+//     double dLat = _degreesToRadians(lat2 - lat1);
+//     double dLon = _degreesToRadians(lon2 - lon1);
+//     double a =
+//         sin(dLat / 2) * sin(dLat / 2) +
+//         cos(_degreesToRadians(lat1)) *
+//             cos(_degreesToRadians(lat2)) *
+//             sin(dLon / 2) *
+//             sin(dLon / 2);
+//     double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+//     return earthRadius * c;
+//   }
+
+//   double _degreesToRadians(double degrees) {
+//     return degrees * (pi / 180);
+//   }
+
+//   double? _getDriverDistance(Map<String, dynamic> request) {
+//     if (businessLatitude == null ||
+//         businessLongitude == null ||
+//         request['latitude'] == null ||
+//         request['longitude'] == null) {
+//       return null;
+//     }
+//     return _calculateDistance(
+//       businessLatitude!,
+//       businessLongitude!,
+//       request['latitude'].toDouble(),
+//       request['longitude'].toDouble(),
+//     );
+//   }
+
+//   void _applyFilters() {
+//     List<dynamic> filtered = List.from(jobRequests);
+
+//     if (_selectedFilter == 'Hired') {
+//       filtered = filtered.where((req) => req['is_accepted'] == true).toList();
+//     } else if (_selectedFilter == 'Pending') {
+//       filtered = filtered.where((req) => req['is_accepted'] == false).toList();
+//     }
+
+//     filtered =
+//         filtered.where((req) {
+//           double? distance = _getDriverDistance(req);
+//           return distance == null || distance <= _maxDistance;
+//         }).toList();
+
+//     filtered =
+//         filtered.where((req) {
+//           double rating = (req['average_rating'] ?? 0.0).toDouble();
+//           return rating >= _minRating;
+//         }).toList();
+
+//     filtered.sort((a, b) {
+//       double? distanceA = _getDriverDistance(a);
+//       double? distanceB = _getDriverDistance(b);
+//       if (distanceA == null && distanceB == null) return 0;
+//       if (distanceA == null) return 1;
+//       if (distanceB == null) return -1;
+//       return distanceA.compareTo(distanceB);
+//     });
+
+//     setState(() {
+//       filteredJobRequests = filtered;
+//     });
+//   }
+
+//   Future<void> _hireDriver(int jobRequestId) async {
+//     final url = Uri.parse('$baseUrl/api/job-requests/$jobRequestId/accept/');
+//     try {
+//       final response = await http.post(
+//         url,
+//         headers: _getAuthHeaders(),
+//         body: json.encode({}),
+//       );
+//       if (response.statusCode == 200) {
+//         await fetchJobRequests();
+//       }
+//     } catch (e) {
+//       print('Hire Error: $e');
+//     }
+//   }
+
+//   Widget _buildRatingDisplay(double rating) {
+//     return Row(
+//       mainAxisSize: MainAxisSize.min,
+//       children: [
+//         Icon(Icons.star, color: Colors.amber, size: 12),
+//         SizedBox(width: 2),
+//         Text(
+//           rating > 0 ? rating.toStringAsFixed(1) : 'N/A',
+//           style: TextStyle(
+//             color: rating > 0 ? darkBlue : Colors.grey,
+//             fontWeight: FontWeight.w500,
+//             fontSize: 11,
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+
+//   Widget _buildDistanceDisplay(double? distance) {
+//     if (distance == null) {
+//       return Text(
+//         'Distance: Unknown',
+//         style: TextStyle(fontSize: 10, color: Colors.grey),
+//       );
+//     }
+//     return Row(
+//       mainAxisSize: MainAxisSize.min,
+//       children: [
+//         Icon(Icons.location_on, size: 12, color: accentBlue),
+//         SizedBox(width: 2),
+//         Text(
+//           '${distance.toStringAsFixed(1)}mi',
+//           style: TextStyle(
+//             fontSize: 10,
+//             color: accentBlue,
+//             fontWeight: FontWeight.w500,
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+
+//   Widget _buildCompactJobInfo() {
+//     return Container(
+//       margin: EdgeInsets.only(bottom: 8),
+//       padding: EdgeInsets.all(10),
+//       decoration: BoxDecoration(
+//         gradient: LinearGradient(
+//           colors: [primaryBlue, lightBlue],
+//           begin: Alignment.topLeft,
+//           end: Alignment.bottomRight,
+//         ),
+//         borderRadius: BorderRadius.circular(8),
+//         boxShadow: [
+//           BoxShadow(
+//             color: primaryBlue.withOpacity(0.3),
+//             blurRadius: 4,
+//             offset: Offset(0, 2),
+//           ),
+//         ],
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Text(
+//             jobData!['title'],
+//             style: TextStyle(
+//               fontSize: 16,
+//               fontWeight: FontWeight.bold,
+//               color: Colors.white,
+//             ),
+//             maxLines: 1,
+//             overflow: TextOverflow.ellipsis,
+//           ),
+//           SizedBox(height: 4),
+//           Text(
+//             jobData!['description'],
+//             style: TextStyle(fontSize: 11, color: Colors.white70),
+//             maxLines: 2,
+//             overflow: TextOverflow.ellipsis,
+//           ),
+//           SizedBox(height: 6),
+//           Row(
+//             children: [
+//               Expanded(
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     Text(
+//                       'Business: ${jobData!['business_detail']?['name'] ?? 'Unknown'}',
+//                       style: TextStyle(fontSize: 10, color: Colors.white70),
+//                       maxLines: 1,
+//                       overflow: TextOverflow.ellipsis,
+//                     ),
+//                     Text(
+//                       'Hourly: \$${jobData!['hourly_rate']} | Delivery: \$${jobData!['per_delivery_rate']}',
+//                       style: TextStyle(
+//                         fontSize: 10,
+//                         color: Colors.white,
+//                         fontWeight: FontWeight.w500,
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ),
+//               Container(
+//                 padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+//                 decoration: BoxDecoration(
+//                   color: Colors.white.withOpacity(0.2),
+//                   borderRadius: BorderRadius.circular(4),
+//                 ),
+//                 child: Text(
+//                   '${jobData!['start_time']} - ${jobData!['end_time']}',
+//                   style: TextStyle(
+//                     fontSize: 9,
+//                     color: Colors.white,
+//                     fontWeight: FontWeight.w500,
+//                   ),
+//                 ),
+//               ),
+//             ],
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildCompactFilterSection() {
+//     return Container(
+//       margin: EdgeInsets.only(bottom: 8),
+//       padding: EdgeInsets.all(8),
+//       decoration: BoxDecoration(
+//         color: cardBlue,
+//         borderRadius: BorderRadius.circular(6),
+//         border: Border.all(color: lightBlue.withOpacity(0.3)),
+//       ),
+//       child: Column(
+//         children: [
+//           Row(
+//             children: [
+//               Text(
+//                 'Filters',
+//                 style: TextStyle(
+//                   fontSize: 12,
+//                   fontWeight: FontWeight.bold,
+//                   color: darkBlue,
+//                 ),
+//               ),
+//               Spacer(),
+//               Container(
+//                 padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+//                 decoration: BoxDecoration(
+//                   color: primaryBlue,
+//                   borderRadius: BorderRadius.circular(10),
+//                 ),
+//                 child: DropdownButton<String>(
+//                   value: _selectedFilter,
+//                   underline: Container(),
+//                   style: TextStyle(fontSize: 10, color: Colors.white),
+//                   dropdownColor: primaryBlue,
+//                   items:
+//                       ['All', 'Hired', 'Pending'].map((String value) {
+//                         return DropdownMenuItem<String>(
+//                           value: value,
+//                           child: Text(
+//                             value,
+//                             style: TextStyle(color: Colors.white),
+//                           ),
+//                         );
+//                       }).toList(),
+//                   onChanged: (String? newValue) {
+//                     setState(() {
+//                       _selectedFilter = newValue!;
+//                       _applyFilters();
+//                     });
+//                   },
+//                 ),
+//               ),
+//             ],
+//           ),
+//           SizedBox(height: 6),
+//           Row(
+//             children: [
+//               Expanded(
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     Text(
+//                       'Distance: ${_maxDistance.toInt()}mi',
+//                       style: TextStyle(fontSize: 10, color: darkBlue),
+//                     ),
+//                     SizedBox(
+//                       height: 20,
+//                       child: Slider(
+//                         value: _maxDistance,
+//                         min: 1,
+//                         max: 100,
+//                         divisions: 99,
+//                         activeColor: primaryBlue,
+//                         inactiveColor: lightBlue.withOpacity(0.3),
+//                         onChanged: (double value) {
+//                           setState(() {
+//                             _maxDistance = value;
+//                             _applyFilters();
+//                           });
+//                         },
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ),
+//               SizedBox(width: 12),
+//               Expanded(
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     Text(
+//                       'Rating: ${_minRating.toStringAsFixed(1)}',
+//                       style: TextStyle(fontSize: 10, color: darkBlue),
+//                     ),
+//                     SizedBox(
+//                       height: 20,
+//                       child: Slider(
+//                         value: _minRating,
+//                         min: 0,
+//                         max: 5,
+//                         divisions: 50,
+//                         activeColor: primaryBlue,
+//                         inactiveColor: lightBlue.withOpacity(0.3),
+//                         onChanged: (double value) {
+//                           setState(() {
+//                             _minRating = value;
+//                             _applyFilters();
+//                           });
+//                         },
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ),
+//             ],
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       backgroundColor: backgroundBlue,
+//       appBar: AppBar(
+//         title: Text(
+//           'Job Details',
+//           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+//         ),
+//         backgroundColor: primaryBlue,
+//         foregroundColor: Colors.white,
+//         elevation: 2,
+//         centerTitle: true,
+//       ),
+//       body:
+//           _isLoading
+//               ? Center(child: CircularProgressIndicator(color: primaryBlue))
+//               : _errorMessage != null
+//               ? Center(
+//                 child: Text(
+//                   _errorMessage!,
+//                   style: TextStyle(color: Colors.red, fontSize: 12),
+//                 ),
+//               )
+//               : jobData == null
+//               ? Center(
+//                 child: Text(
+//                   "Failed to load data",
+//                   style: TextStyle(fontSize: 12),
+//                 ),
+//               )
+//               : Padding(
+//                 padding: EdgeInsets.all(8),
+//                 child: ListView(
+//                   children: [
+//                     _buildCompactJobInfo(),
+//                     _buildCompactFilterSection(),
+//                     Container(
+//                       padding: EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+//                       decoration: BoxDecoration(
+//                         color: darkBlue,
+//                         borderRadius: BorderRadius.circular(6),
+//                       ),
+//                       child: Row(
+//                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                         children: [
+//                           Text(
+//                             "Applied Drivers",
+//                             style: TextStyle(
+//                               fontWeight: FontWeight.bold,
+//                               fontSize: 12,
+//                               color: Colors.white,
+//                             ),
+//                           ),
+//                           Container(
+//                             padding: EdgeInsets.symmetric(
+//                               horizontal: 6,
+//                               vertical: 2,
+//                             ),
+//                             decoration: BoxDecoration(
+//                               color: Colors.white.withOpacity(0.2),
+//                               borderRadius: BorderRadius.circular(8),
+//                             ),
+//                             child: Text(
+//                               "${filteredJobRequests.length}/${jobRequests.length}",
+//                               style: TextStyle(
+//                                 color: Colors.white,
+//                                 fontSize: 10,
+//                                 fontWeight: FontWeight.bold,
+//                               ),
+//                             ),
+//                           ),
+//                         ],
+//                       ),
+//                     ),
+//                     SizedBox(height: 6),
+//                     filteredJobRequests.isEmpty
+//                         ? Container(
+//                           padding: EdgeInsets.all(16),
+//                           decoration: BoxDecoration(
+//                             color: Colors.grey.shade100,
+//                             borderRadius: BorderRadius.circular(6),
+//                           ),
+//                           child: Text(
+//                             "No drivers match criteria",
+//                             style: TextStyle(
+//                               fontSize: 11,
+//                               color: Colors.grey[600],
+//                             ),
+//                           ),
+//                         )
+//                         : Column(
+//                           children:
+//                               filteredJobRequests.map<Widget>((req) {
+//                                 final bool isAccepted = req['is_accepted'];
+//                                 final int jobRequestId = req['job_request_id'];
+//                                 final int driverId = req['driver_id'];
+//                                 final String driverName =
+//                                     req['driver_name'] ?? 'Unknown';
+//                                 final double averageRating =
+//                                     (req['average_rating'] ?? 0.0).toDouble();
+//                                 final String preferredAddress =
+//                                     req['preferred_working_address'] ??
+//                                     'Not provided';
+//                                 final double? distance = _getDriverDistance(
+//                                   req,
+//                                 );
+
+//                                 return Container(
+//                                   margin: EdgeInsets.only(bottom: 4),
+//                                   decoration: BoxDecoration(
+//                                     color: Colors.white,
+//                                     borderRadius: BorderRadius.circular(6),
+//                                     border: Border.all(
+//                                       color:
+//                                           isAccepted
+//                                               ? Colors.green.withOpacity(0.5)
+//                                               : lightBlue.withOpacity(0.3),
+//                                     ),
+//                                     boxShadow: [
+//                                       BoxShadow(
+//                                         color: Colors.black.withOpacity(0.05),
+//                                         blurRadius: 2,
+//                                         offset: Offset(0, 1),
+//                                       ),
+//                                     ],
+//                                   ),
+//                                   child: ListTile(
+//                                     dense: true,
+//                                     contentPadding: EdgeInsets.symmetric(
+//                                       horizontal: 8,
+//                                       vertical: 2,
+//                                     ),
+//                                     leading: Container(
+//                                       width: 32,
+//                                       height: 32,
+//                                       decoration: BoxDecoration(
+//                                         color:
+//                                             isAccepted
+//                                                 ? Colors.green
+//                                                 : primaryBlue,
+//                                         shape: BoxShape.circle,
+//                                       ),
+//                                       child: Icon(
+//                                         isAccepted ? Icons.check : Icons.person,
+//                                         color: Colors.white,
+//                                         size: 16,
+//                                       ),
+//                                     ),
+//                                     title: Text(
+//                                       driverName,
+//                                       style: TextStyle(
+//                                         fontSize: 12,
+//                                         fontWeight: FontWeight.bold,
+//                                         color: darkBlue,
+//                                       ),
+//                                     ),
+//                                     subtitle: Column(
+//                                       crossAxisAlignment:
+//                                           CrossAxisAlignment.start,
+//                                       children: [
+//                                         Text(
+//                                           "ID: $driverId",
+//                                           style: TextStyle(
+//                                             fontSize: 9,
+//                                             color: Colors.grey[600],
+//                                           ),
+//                                         ),
+//                                         SizedBox(height: 2),
+//                                         Row(
+//                                           children: [
+//                                             _buildRatingDisplay(averageRating),
+//                                             SizedBox(width: 8),
+//                                             _buildDistanceDisplay(distance),
+//                                           ],
+//                                         ),
+//                                         SizedBox(height: 2),
+//                                         Text(
+//                                           preferredAddress,
+//                                           style: TextStyle(
+//                                             fontSize: 9,
+//                                             color: Colors.grey[600],
+//                                           ),
+//                                           maxLines: 1,
+//                                           overflow: TextOverflow.ellipsis,
+//                                         ),
+//                                       ],
+//                                     ),
+//                                     trailing:
+//                                         isAccepted
+//                                             ? Row(
+//                                               mainAxisSize: MainAxisSize.min,
+//                                               children: [
+//                                                 Container(
+//                                                   padding: EdgeInsets.symmetric(
+//                                                     horizontal: 4,
+//                                                     vertical: 2,
+//                                                   ),
+//                                                   decoration: BoxDecoration(
+//                                                     color:
+//                                                         Colors.green.shade100,
+//                                                     borderRadius:
+//                                                         BorderRadius.circular(
+//                                                           4,
+//                                                         ),
+//                                                   ),
+//                                                   child: Text(
+//                                                     "Hired",
+//                                                     style: TextStyle(
+//                                                       color: Colors.green,
+//                                                       fontSize: 8,
+//                                                       fontWeight:
+//                                                           FontWeight.bold,
+//                                                     ),
+//                                                   ),
+//                                                 ),
+//                                                 SizedBox(width: 4),
+//                                                 SizedBox(
+//                                                   width: 60,
+//                                                   height: 24,
+//                                                   child: ElevatedButton.icon(
+//                                                     onPressed: () {
+//                                                       Navigator.push(
+//                                                         context,
+//                                                         MaterialPageRoute(
+//                                                           builder:
+//                                                               (
+//                                                                 context,
+//                                                               ) => ChatScreen(
+//                                                                 jobRequestId:
+//                                                                     jobRequestId,
+//                                                               ),
+//                                                         ),
+//                                                       );
+//                                                     },
+//                                                     icon: Icon(
+//                                                       Icons.chat,
+//                                                       size: 12,
+//                                                     ),
+//                                                     label: Text(
+//                                                       "Chat",
+//                                                       style: TextStyle(
+//                                                         fontSize: 8,
+//                                                       ),
+//                                                     ),
+//                                                     style: ElevatedButton.styleFrom(
+//                                                       backgroundColor:
+//                                                           accentBlue,
+//                                                       foregroundColor:
+//                                                           Colors.white,
+//                                                       padding:
+//                                                           EdgeInsets.symmetric(
+//                                                             horizontal: 4,
+//                                                             vertical: 2,
+//                                                           ),
+//                                                     ),
+//                                                   ),
+//                                                 ),
+//                                               ],
+//                                             )
+//                                             : SizedBox(
+//                                               width: 60,
+//                                               height: 24,
+//                                               child: ElevatedButton.icon(
+//                                                 onPressed: () async {
+//                                                   await _hireDriver(
+//                                                     jobRequestId,
+//                                                   );
+//                                                 },
+//                                                 icon: Icon(
+//                                                   Icons.work,
+//                                                   size: 12,
+//                                                 ),
+//                                                 label: Text(
+//                                                   "Hire",
+//                                                   style: TextStyle(fontSize: 8),
+//                                                 ),
+//                                                 style: ElevatedButton.styleFrom(
+//                                                   backgroundColor: primaryBlue,
+//                                                   foregroundColor: Colors.white,
+//                                                   padding: EdgeInsets.symmetric(
+//                                                     horizontal: 4,
+//                                                     vertical: 2,
+//                                                   ),
+//                                                 ),
+//                                               ),
+//                                             ),
+//                                   ),
+//                                 );
+//                               }).toList(),
+//                         ),
+//                   ],
+//                 ),
+//               ),
+//     );
+//   }
+// }
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -609,13 +1376,12 @@ class _JobPostDetailsPageState extends State<JobPostDetailsPage> {
   double _maxDistance = 50.0;
   double _minRating = 0.0;
 
-  // Compact Blue theme colors
-  static const Color primaryBlue = Color(0xFF1976D2);
+  // Blue theme colors
+  static const Color primaryBlue = Color(0xFF1565C0);
   static const Color lightBlue = Color(0xFF42A5F5);
   static const Color darkBlue = Color(0xFF0D47A1);
-  static const Color accentBlue = Color(0xFF2196F3);
-  static const Color backgroundBlue = Color(0xFFF8FBFF);
-  static const Color cardBlue = Color(0xFFE8F4FD);
+  static const Color accentBlue = Color(0xFF64B5F6);
+  static const Color backgroundBlue = Color(0xFFF3F8FF);
 
   @override
   void initState() {
@@ -798,173 +1564,341 @@ class _JobPostDetailsPageState extends State<JobPostDetailsPage> {
   }
 
   Widget _buildRatingDisplay(double rating) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(Icons.star, color: Colors.amber, size: 12),
-        SizedBox(width: 2),
-        Text(
-          rating > 0 ? rating.toStringAsFixed(1) : 'N/A',
-          style: TextStyle(
-            color: rating > 0 ? darkBlue : Colors.grey,
-            fontWeight: FontWeight.w500,
-            fontSize: 11,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color:
+            rating > 0
+                ? accentBlue.withOpacity(0.1)
+                : Colors.grey.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.star,
+            color: rating > 0 ? Colors.amber : Colors.grey,
+            size: 14,
           ),
-        ),
-      ],
+          const SizedBox(width: 2),
+          Text(
+            rating > 0 ? rating.toStringAsFixed(1) : 'N/A',
+            style: TextStyle(
+              color: rating > 0 ? darkBlue : Colors.grey,
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildDistanceDisplay(double? distance) {
-    if (distance == null) {
-      return Text(
-        'Distance: Unknown',
-        style: TextStyle(fontSize: 10, color: Colors.grey),
-      );
-    }
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(Icons.location_on, size: 12, color: accentBlue),
-        SizedBox(width: 2),
-        Text(
-          '${distance.toStringAsFixed(1)}mi',
-          style: TextStyle(
-            fontSize: 10,
-            color: accentBlue,
-            fontWeight: FontWeight.w500,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: lightBlue.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.location_on, size: 14, color: primaryBlue),
+          const SizedBox(width: 2),
+          Text(
+            distance != null ? '${distance.toStringAsFixed(1)} mi' : 'Unknown',
+            style: TextStyle(
+              fontSize: 12,
+              color: primaryBlue,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildCompactJobInfo() {
+  Widget _buildInfoCard() {
     return Container(
-      margin: EdgeInsets.only(bottom: 8),
-      padding: EdgeInsets.all(10),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [primaryBlue, lightBlue],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: primaryBlue.withOpacity(0.3),
-            blurRadius: 4,
-            offset: Offset(0, 2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            jobData!['title'],
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          SizedBox(height: 4),
-          Text(
-            jobData!['description'],
-            style: TextStyle(fontSize: 11, color: Colors.white70),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          SizedBox(height: 6),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Business: ${jobData!['business_detail']?['name'] ?? 'Unknown'}',
-                      style: TextStyle(fontSize: 10, color: Colors.white70),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      'Hourly: \$${jobData!['hourly_rate']} | Delivery: \$${jobData!['per_delivery_rate']}',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              jobData!['title'],
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  '${jobData!['start_time']} - ${jobData!['end_time']}',
-                  style: TextStyle(
-                    fontSize: 9,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              jobData!['description'],
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.white.withOpacity(0.9),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildRateChip(
+                    '\$${jobData!['hourly_rate']}/hr',
+                    Icons.schedule,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildRateChip(
+                    '\$${jobData!['per_delivery_rate']}/del',
+                    Icons.local_shipping,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            _buildTimeChip(
+              '${jobData!['start_time']} - ${jobData!['end_time']}',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRateChip(String text, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: Colors.white),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCompactFilterSection() {
+  Widget _buildTimeChip(String time) {
     return Container(
-      margin: EdgeInsets.only(bottom: 8),
-      padding: EdgeInsets.all(8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: cardBlue,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: lightBlue.withOpacity(0.3)),
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.access_time, size: 16, color: Colors.white),
+          const SizedBox(width: 4),
+          Text(
+            time,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBusinessCard() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: accentBlue.withOpacity(0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: primaryBlue.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.business, color: primaryBlue, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      jobData!['business_detail']?['name'] ??
+                          'Unknown Business',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: darkBlue,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      jobData!['business_detail']?['address'] ??
+                          'Address not available',
+                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (jobData!['complimentary_benefits'] != null &&
+              (jobData!['complimentary_benefits'] as List).isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              'Benefits:',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: darkBlue,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              children:
+                  (jobData!['complimentary_benefits'] as List)
+                      .map(
+                        (benefit) => Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: accentBlue.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            benefit.toString(),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: primaryBlue,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterSection() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: accentBlue.withOpacity(0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.filter_list, color: primaryBlue, size: 20),
+              const SizedBox(width: 8),
               Text(
                 'Filters',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: darkBlue,
                 ),
               ),
-              Spacer(),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          Row(
+            children: [
+              Text(
+                'Status: ',
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  color: darkBlue,
+                  fontSize: 14,
+                ),
+              ),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
-                  color: primaryBlue,
-                  borderRadius: BorderRadius.circular(10),
+                  color: backgroundBlue,
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: DropdownButton<String>(
                   value: _selectedFilter,
-                  underline: Container(),
-                  style: TextStyle(fontSize: 10, color: Colors.white),
-                  dropdownColor: primaryBlue,
+                  underline: const SizedBox(),
+                  style: TextStyle(color: primaryBlue, fontSize: 14),
                   items:
                       ['All', 'Hired', 'Pending'].map((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
-                          child: Text(
-                            value,
-                            style: TextStyle(color: Colors.white),
-                          ),
+                          child: Text(value),
                         );
                       }).toList(),
                   onChanged: (String? newValue) {
@@ -977,69 +1911,227 @@ class _JobPostDetailsPageState extends State<JobPostDetailsPage> {
               ),
             ],
           ),
-          SizedBox(height: 6),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Distance: ${_maxDistance.toInt()}mi',
-                      style: TextStyle(fontSize: 10, color: darkBlue),
-                    ),
-                    SizedBox(
-                      height: 20,
-                      child: Slider(
-                        value: _maxDistance,
-                        min: 1,
-                        max: 100,
-                        divisions: 99,
-                        activeColor: primaryBlue,
-                        inactiveColor: lightBlue.withOpacity(0.3),
-                        onChanged: (double value) {
-                          setState(() {
-                            _maxDistance = value;
-                            _applyFilters();
-                          });
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Rating: ${_minRating.toStringAsFixed(1)}',
-                      style: TextStyle(fontSize: 10, color: darkBlue),
-                    ),
-                    SizedBox(
-                      height: 20,
-                      child: Slider(
-                        value: _minRating,
-                        min: 0,
-                        max: 5,
-                        divisions: 50,
-                        activeColor: primaryBlue,
-                        inactiveColor: lightBlue.withOpacity(0.3),
-                        onChanged: (double value) {
-                          setState(() {
-                            _minRating = value;
-                            _applyFilters();
-                          });
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          const SizedBox(height: 12),
+
+          Text(
+            'Max Distance: ${_maxDistance.toInt()} miles',
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: darkBlue,
+              fontSize: 14,
+            ),
+          ),
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              activeTrackColor: primaryBlue,
+              inactiveTrackColor: accentBlue.withOpacity(0.3),
+              thumbColor: primaryBlue,
+              overlayColor: primaryBlue.withOpacity(0.2),
+            ),
+            child: Slider(
+              value: _maxDistance,
+              min: 1,
+              max: 100,
+              divisions: 99,
+              onChanged: (double value) {
+                setState(() {
+                  _maxDistance = value;
+                  _applyFilters();
+                });
+              },
+            ),
+          ),
+
+          Text(
+            'Min Rating: ${_minRating.toStringAsFixed(1)}',
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: darkBlue,
+              fontSize: 14,
+            ),
+          ),
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              activeTrackColor: primaryBlue,
+              inactiveTrackColor: accentBlue.withOpacity(0.3),
+              thumbColor: primaryBlue,
+              overlayColor: primaryBlue.withOpacity(0.2),
+            ),
+            child: Slider(
+              value: _minRating,
+              min: 0,
+              max: 5,
+              divisions: 50,
+              onChanged: (double value) {
+                setState(() {
+                  _minRating = value;
+                  _applyFilters();
+                });
+              },
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDriverCard(Map<String, dynamic> req) {
+    final bool isAccepted = req['is_accepted'];
+    final int jobRequestId = req['job_request_id'];
+    final int driverId = req['driver_id'];
+    final String driverName = req['driver_name'] ?? 'Unknown Driver';
+    final double averageRating = (req['average_rating'] ?? 0.0).toDouble();
+    final String preferredAddress =
+        req['preferred_working_address'] ?? 'Address not provided';
+    final double? distance = _getDriverDistance(req);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color:
+              isAccepted
+                  ? Colors.green.withOpacity(0.3)
+                  : accentBlue.withOpacity(0.3),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color:
+                        isAccepted
+                            ? Colors.green.withOpacity(0.1)
+                            : primaryBlue.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    isAccepted ? Icons.check_circle : Icons.person,
+                    color: isAccepted ? Colors.green : primaryBlue,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        driverName,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: darkBlue,
+                        ),
+                      ),
+                      Text(
+                        'ID: $driverId',
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                ),
+                if (isAccepted)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      'HIRED',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            Row(
+              children: [
+                _buildRatingDisplay(averageRating),
+                const SizedBox(width: 8),
+                _buildDistanceDisplay(distance),
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            Text(
+              preferredAddress,
+              style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 12),
+
+            if (isAccepted)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => ChatScreen(jobRequestId: jobRequestId),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.chat, size: 18),
+                  label: const Text('Start Chat'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryBlue,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              )
+            else
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    await _hireDriver(jobRequestId);
+                  },
+                  icon: const Icon(Icons.work, size: 18),
+                  label: const Text('Hire Driver'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryBlue,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -1049,292 +2141,111 @@ class _JobPostDetailsPageState extends State<JobPostDetailsPage> {
     return Scaffold(
       backgroundColor: backgroundBlue,
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Job Details',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: primaryBlue,
-        foregroundColor: Colors.white,
-        elevation: 2,
-        centerTitle: true,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body:
           _isLoading
-              ? Center(child: CircularProgressIndicator(color: primaryBlue))
+              ? Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(primaryBlue),
+                ),
+              )
               : _errorMessage != null
               ? Center(
-                child: Text(
-                  _errorMessage!,
-                  style: TextStyle(color: Colors.red, fontSize: 12),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Text(
+                    _errorMessage!,
+                    style: const TextStyle(color: Colors.red, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               )
               : jobData == null
-              ? Center(
-                child: Text(
-                  "Failed to load data",
-                  style: TextStyle(fontSize: 12),
-                ),
-              )
-              : Padding(
-                padding: EdgeInsets.all(8),
-                child: ListView(
+              ? const Center(child: Text("Failed to load data"))
+              : SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildCompactJobInfo(),
-                    _buildCompactFilterSection(),
+                    _buildInfoCard(),
+                    _buildBusinessCard(),
+                    _buildFilterSection(),
+
                     Container(
-                      padding: EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                      decoration: BoxDecoration(
-                        color: darkBlue,
-                        borderRadius: BorderRadius.circular(6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 8,
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "Applied Drivers",
+                            'Applied Drivers',
                             style: TextStyle(
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                              color: Colors.white,
+                              color: darkBlue,
                             ),
                           ),
                           Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(8),
+                              color: primaryBlue.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              "${filteredJobRequests.length}/${jobRequests.length}",
+                              '${filteredJobRequests.length}/${jobRequests.length}',
                               style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
+                                color: primaryBlue,
                                 fontWeight: FontWeight.bold,
+                                fontSize: 12,
                               ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    SizedBox(height: 6),
-                    filteredJobRequests.isEmpty
-                        ? Container(
-                          padding: EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            "No drivers match criteria",
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        )
-                        : Column(
-                          children:
-                              filteredJobRequests.map<Widget>((req) {
-                                final bool isAccepted = req['is_accepted'];
-                                final int jobRequestId = req['job_request_id'];
-                                final int driverId = req['driver_id'];
-                                final String driverName =
-                                    req['driver_name'] ?? 'Unknown';
-                                final double averageRating =
-                                    (req['average_rating'] ?? 0.0).toDouble();
-                                final String preferredAddress =
-                                    req['preferred_working_address'] ??
-                                    'Not provided';
-                                final double? distance = _getDriverDistance(
-                                  req,
-                                );
 
-                                return Container(
-                                  margin: EdgeInsets.only(bottom: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(
-                                      color:
-                                          isAccepted
-                                              ? Colors.green.withOpacity(0.5)
-                                              : lightBlue.withOpacity(0.3),
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.05),
-                                        blurRadius: 2,
-                                        offset: Offset(0, 1),
-                                      ),
-                                    ],
-                                  ),
-                                  child: ListTile(
-                                    dense: true,
-                                    contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 2,
-                                    ),
-                                    leading: Container(
-                                      width: 32,
-                                      height: 32,
-                                      decoration: BoxDecoration(
-                                        color:
-                                            isAccepted
-                                                ? Colors.green
-                                                : primaryBlue,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Icon(
-                                        isAccepted ? Icons.check : Icons.person,
-                                        color: Colors.white,
-                                        size: 16,
-                                      ),
-                                    ),
-                                    title: Text(
-                                      driverName,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: darkBlue,
-                                      ),
-                                    ),
-                                    subtitle: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "ID: $driverId",
-                                          style: TextStyle(
-                                            fontSize: 9,
-                                            color: Colors.grey[600],
-                                          ),
-                                        ),
-                                        SizedBox(height: 2),
-                                        Row(
-                                          children: [
-                                            _buildRatingDisplay(averageRating),
-                                            SizedBox(width: 8),
-                                            _buildDistanceDisplay(distance),
-                                          ],
-                                        ),
-                                        SizedBox(height: 2),
-                                        Text(
-                                          preferredAddress,
-                                          style: TextStyle(
-                                            fontSize: 9,
-                                            color: Colors.grey[600],
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
-                                    ),
-                                    trailing:
-                                        isAccepted
-                                            ? Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Container(
-                                                  padding: EdgeInsets.symmetric(
-                                                    horizontal: 4,
-                                                    vertical: 2,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color:
-                                                        Colors.green.shade100,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          4,
-                                                        ),
-                                                  ),
-                                                  child: Text(
-                                                    "Hired",
-                                                    style: TextStyle(
-                                                      color: Colors.green,
-                                                      fontSize: 8,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ),
-                                                SizedBox(width: 4),
-                                                SizedBox(
-                                                  width: 60,
-                                                  height: 24,
-                                                  child: ElevatedButton.icon(
-                                                    onPressed: () {
-                                                      Navigator.push(
-                                                        context,
-                                                        MaterialPageRoute(
-                                                          builder:
-                                                              (
-                                                                context,
-                                                              ) => ChatScreen(
-                                                                jobRequestId:
-                                                                    jobRequestId,
-                                                              ),
-                                                        ),
-                                                      );
-                                                    },
-                                                    icon: Icon(
-                                                      Icons.chat,
-                                                      size: 12,
-                                                    ),
-                                                    label: Text(
-                                                      "Chat",
-                                                      style: TextStyle(
-                                                        fontSize: 8,
-                                                      ),
-                                                    ),
-                                                    style: ElevatedButton.styleFrom(
-                                                      backgroundColor:
-                                                          accentBlue,
-                                                      foregroundColor:
-                                                          Colors.white,
-                                                      padding:
-                                                          EdgeInsets.symmetric(
-                                                            horizontal: 4,
-                                                            vertical: 2,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            )
-                                            : SizedBox(
-                                              width: 60,
-                                              height: 24,
-                                              child: ElevatedButton.icon(
-                                                onPressed: () async {
-                                                  await _hireDriver(
-                                                    jobRequestId,
-                                                  );
-                                                },
-                                                icon: Icon(
-                                                  Icons.work,
-                                                  size: 12,
-                                                ),
-                                                label: Text(
-                                                  "Hire",
-                                                  style: TextStyle(fontSize: 8),
-                                                ),
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: primaryBlue,
-                                                  foregroundColor: Colors.white,
-                                                  padding: EdgeInsets.symmetric(
-                                                    horizontal: 4,
-                                                    vertical: 2,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                  ),
-                                );
-                              }).toList(),
+                    if (filteredJobRequests.isEmpty)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(32),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
                         ),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.search_off,
+                              size: 48,
+                              color: Colors.grey[400],
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'No drivers match your criteria',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      ...filteredJobRequests
+                          .map((req) => _buildDriverCard(req))
+                          ,
                   ],
                 ),
               ),

@@ -24,7 +24,8 @@
 //     final prefs = await SharedPreferences.getInstance();
 //     final appLanguage = AppLanguage();
 //     await appLanguage.init();
-//     final hasSelectedLanguage = prefs.containsKey('language_code');
+//     final languageCode = prefs.getString('language_code');
+//     final hasSelectedLanguage = languageCode != null && languageCode.isNotEmpty;
 
 //     runApp(
 //       ChangeNotifierProvider.value(
@@ -91,7 +92,7 @@ import 'package:taskova_shopkeeper/language/language_selection_screen.dart';
 import 'package:taskova_shopkeeper/view/bottom_nav.dart';
 import 'package:taskova_shopkeeper/Model/profile_status.dart';
 import 'package:taskova_shopkeeper/auth/profile_page.dart';
-import 'package:taskova_shopkeeper/view/business_detial_filling.dart';
+import 'package:taskova_shopkeeper/view/busines%20management/business_detial_filling.dart';
 import 'package:taskova_shopkeeper/view/verification.dart';
 
 void main() async {
@@ -159,12 +160,12 @@ Future<bool> _checkUserLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
     final accessToken = prefs.getString('access_token');
     final userId = prefs.getString('user_id');
-    
+
     // Check if both access token and user ID exist
-    return accessToken != null && 
-           accessToken.isNotEmpty && 
-           userId != null && 
-           userId.isNotEmpty;
+    return accessToken != null &&
+        accessToken.isNotEmpty &&
+        userId != null &&
+        userId.isNotEmpty;
   } catch (e) {
     print("Error checking login status: $e");
     return false;
@@ -176,7 +177,7 @@ class MyApp extends StatelessWidget {
   final bool isLoggedIn;
 
   const MyApp({
-    super.key, 
+    super.key,
     required this.hasSelectedLanguage,
     required this.isLoggedIn,
   });
@@ -199,12 +200,12 @@ class MyApp extends StatelessWidget {
     if (!hasSelectedLanguage) {
       return const LanguageSelectionScreen();
     }
-    
+
     // If not logged in, show login screen
     if (!isLoggedIn) {
       return Login();
     }
-    
+
     // If logged in, show splash screen to determine next screen
     return const AppInitializationScreen();
   }
@@ -215,7 +216,8 @@ class AppInitializationScreen extends StatefulWidget {
   const AppInitializationScreen({super.key});
 
   @override
-  State<AppInitializationScreen> createState() => _AppInitializationScreenState();
+  State<AppInitializationScreen> createState() =>
+      _AppInitializationScreenState();
 }
 
 class _AppInitializationScreenState extends State<AppInitializationScreen> {
@@ -229,7 +231,7 @@ class _AppInitializationScreenState extends State<AppInitializationScreen> {
     try {
       // Add a small delay for better UX
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       // Check profile status and navigate accordingly
       await checkAndNavigateBasedOnStatus(
         context: context,
@@ -260,10 +262,7 @@ class _AppInitializationScreenState extends State<AppInitializationScreen> {
             SizedBox(height: 20),
             Text(
               'Loading...',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
           ],
         ),

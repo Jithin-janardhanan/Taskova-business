@@ -9,7 +9,7 @@ import 'package:taskova_shopkeeper/Model/api_config.dart';
 import 'package:taskova_shopkeeper/Model/colors.dart';
 import 'package:taskova_shopkeeper/auth/registration.dart';
 import 'package:taskova_shopkeeper/language/language_provider.dart';
-import 'package:taskova_shopkeeper/view/business_detial_filling.dart';
+import 'package:taskova_shopkeeper/view/busines%20management/business_detial_filling.dart';
 
 class ProfileDetailFillingPage extends StatefulWidget {
   const ProfileDetailFillingPage({super.key});

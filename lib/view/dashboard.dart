@@ -603,33 +603,33 @@ class _DashboardState extends State<Dashboard> {
               ),
             ],
           ),
-          child: Column(
-            children: [
-              _buildActivityItem(
-                "New application received",
-                "John Doe applied for delivery job",
-                Icons.person_add,
-                Colors.green,
-                "2 min ago",
-              ),
-              Divider(height: 1),
-              _buildActivityItem(
-                "Job post published",
-                "Evening delivery job is now live",
-                Icons.publish,
-                Colors.blue,
-                "1 hour ago",
-              ),
-              Divider(height: 1),
-              _buildActivityItem(
-                "Driver assigned",
-                "Mike Smith assigned to lunch delivery",
-                Icons.assignment_ind,
-                Colors.orange,
-                "3 hours ago",
-              ),
-            ],
-          ),
+          // child: Column(
+          //   children: [
+          //     _buildActivityItem(
+          //       "New application received",
+          //       "John Doe applied for delivery job",
+          //       Icons.person_add,
+          //       Colors.green,
+          //       "2 min ago",
+          //     ),
+          //     Divider(height: 1),
+          //     _buildActivityItem(
+          //       "Job post published",
+          //       "Evening delivery job is now live",
+          //       Icons.publish,
+          //       Colors.blue,
+          //       "1 hour ago",
+          //     ),
+          //     Divider(height: 1),
+          //     _buildActivityItem(
+          //       "Driver assigned",
+          //       "Mike Smith assigned to lunch delivery",
+          //       Icons.assignment_ind,
+          //       Colors.orange,
+          //       "3 hours ago",
+          //     ),
+          //   ],
+          // ),
         ),
       ],
     );

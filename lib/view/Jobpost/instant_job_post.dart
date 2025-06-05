@@ -8,7 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:taskova_shopkeeper/Model/api_config.dart';
 import 'package:taskova_shopkeeper/view/bottom_nav.dart';
-import 'package:taskova_shopkeeper/view/mypost.dart';
 
 class InstatJobPost extends StatefulWidget {
   const InstatJobPost({super.key});
@@ -440,7 +439,7 @@ class _InstatJobPostState extends State<InstatJobPost> {
           ),
           backgroundColor: Colors.white,
           title: Text(
-            'Error',
+            'Form incomplete',
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -448,7 +447,7 @@ class _InstatJobPostState extends State<InstatJobPost> {
             ),
           ),
           content: Text(
-            'Please fill the form complely and try again.',
+            'Please Select description.',
             style: GoogleFonts.poppins(fontSize: 14, color: Colors.black54),
           ),
           actions: [

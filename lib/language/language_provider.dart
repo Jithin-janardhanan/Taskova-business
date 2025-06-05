@@ -12,8 +12,14 @@ class AppLanguage extends ChangeNotifier {
   // Current language code
   String _currentLanguage = 'en';
 
+  // Loading state
+  bool _isLoading = false;
+
   // Get current language
   String get currentLanguage => _currentLanguage;
+
+  // Get loading state
+  bool get isLoading => _isLoading;
 
   // List of supported languages
   final List<Map<String, String>> supportedLanguages = [
@@ -75,34 +81,25 @@ class AppLanguage extends ChangeNotifier {
     'profile_updated_successfully': 'Profile updated successfully!',
     'failed_to_update_profile': 'Failed to update profile. Please try again.',
     'business_details': 'Business Details',
-'business_instructions': 'Please fill in the details of your business',
-// 'business_name': 'Business Name',
-// 'enter_business_name': 'Enter your business name',
-// 'business_name_required': 'Business name is required',
-// 'business_address': 'Business Address',
-// 'enter_business_address': 'Enter your business address',
-// 'business_address_required': 'Business address is required',
-'email': 'Email',
-'enter_email': 'Enter business email',
-'email_required': 'Email is required',
-'valid_email_required': 'Please enter a valid email',
-'contact_number': 'Contact Number',
-'enter_contact_number': 'Enter business contact number',
-'contact_number_required': 'Contact number is required',
-'postcode': 'Postcode',
-'enter_postcode': 'Enter postcode',
-'postcode_required': 'Postcode is required',
-'please_enter_postcode': 'Please enter a postcode first',
-'fetch_coordinates': 'Fetch coordinates from postcode',
-'active': 'Active',
-'latitude': 'Latitude',
-'enter_latitude': 'Enter latitude',
-'longitude': 'Longitude',
-'enter_longitude': 'Enter longitude',
-'save_business': 'Save Business',
-// 'skip_for_now': 'Skip for now',
-// 'connection_error': 'Connection error. Please check your internet connection.'
-     
+    'business_instructions': 'Please fill in the details of your business',
+    'email': 'Email',
+    'enter_email': 'Enter business email',
+    'email_required': 'Email is required',
+    'valid_email_required': 'Please enter a valid email',
+    'contact_number': 'Contact Number',
+    'enter_contact_number': 'Enter business contact number',
+    'contact_number_required': 'Contact number is required',
+    'postcode': 'Postcode',
+    'enter_postcode': 'Enter postcode',
+    'postcode_required': 'Postcode is required',
+    'please_enter_postcode': 'Please enter a postcode first',
+    'fetch_coordinates': 'Fetch coordinates from postcode',
+    'active': 'Active',
+    'latitude': 'Latitude',
+    'enter_latitude': 'Enter latitude',
+    'longitude': 'Longitude',
+    'enter_longitude': 'Enter longitude',
+    'save_business': 'Save Business',
   };
 
   // Constructor
@@ -112,15 +109,31 @@ class AppLanguage extends ChangeNotifier {
 
   // Initialize app language from shared preferences
   Future<void> init() async {
-    final prefs = await SharedPreferences.getInstance();
-    _currentLanguage = prefs.getString('language_code') ?? 'en';
+    try {
+      _isLoading = true;
+      notifyListeners();
 
-    // If not English, load translations
-    if (_currentLanguage != 'en') {
-      await translateStrings(_currentLanguage);
+      final prefs = await SharedPreferences.getInstance();
+      _currentLanguage = prefs.getString('language_code') ?? 'en';
+
+      print('AppLanguage init: Current language: $_currentLanguage');
+
+      // If not English, load translations
+      if (_currentLanguage != 'en') {
+        await translateStrings(_currentLanguage);
+      } else {
+        _translations = Map.from(_defaultStrings);
+      }
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      print('Error initializing AppLanguage: $e');
+      _currentLanguage = 'en';
+      _translations = Map.from(_defaultStrings);
+      _isLoading = false;
+      notifyListeners();
     }
-
-    notifyListeners();
   }
 
   // Translate a single text
@@ -144,18 +157,26 @@ class AppLanguage extends ChangeNotifier {
     }
 
     try {
+      print('Translating strings to: $targetLanguage');
       Map<String, String> newTranslations = {};
 
-      // Translate each string
+      // Translate each string with error handling for individual translations
       for (var entry in _defaultStrings.entries) {
-        final translation = await _translator.translate(
-          entry.value,
-          to: targetLanguage,
-        );
-        newTranslations[entry.key] = translation.text;
+        try {
+          final translation = await _translator.translate(
+            entry.value,
+            to: targetLanguage,
+          );
+          newTranslations[entry.key] = translation.text;
+        } catch (e) {
+          print('Error translating ${entry.key}: $e');
+          // Use default English text if translation fails
+          newTranslations[entry.key] = entry.value;
+        }
       }
 
       _translations = newTranslations;
+      print('Translation completed for $targetLanguage');
     } catch (e) {
       print('Translation error: $e');
       // Fallback to English if translation fails
@@ -165,22 +186,30 @@ class AppLanguage extends ChangeNotifier {
 
   // Change app language
   Future<void> changeLanguage(String languageCode) async {
-    if (_currentLanguage == languageCode) return;
-
     _currentLanguage = languageCode;
-
-    // Save to shared preferences
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('language_code', languageCode);
-
-    // Update translations
-    await translateStrings(languageCode);
-
+    await prefs.setString('language_code', languageCode); // <- ADD THIS
     notifyListeners();
+    //await loadTranslations(); // load updated translations if needed
   }
 
   // Get a translated string
   String get(String key) {
-    return _translations[key] ?? _defaultStrings[key] ?? key;
+    final translation = _translations[key] ?? _defaultStrings[key] ?? key;
+    return translation;
+  }
+
+  // Clear translations (useful for testing or reset)
+  Future<void> reset() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('language_code');
+      _currentLanguage = 'en';
+      _translations = Map.from(_defaultStrings);
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      print('Error resetting language: $e');
+    }
   }
 }

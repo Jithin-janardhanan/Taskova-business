@@ -10,7 +10,6 @@ import 'package:taskova_shopkeeper/Model/api_config.dart';
 import 'package:taskova_shopkeeper/Model/colors.dart';
 import 'package:taskova_shopkeeper/Model/postcode.dart';
 import 'package:taskova_shopkeeper/language/language_provider.dart';
-import 'package:taskova_shopkeeper/view/bottom_nav.dart';
 import 'package:taskova_shopkeeper/view/verification.dart';
 
 class BusinessFormPage extends StatefulWidget {
@@ -35,7 +34,7 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
   bool _isLoading = false;
   String? _accessToken;
   String? _userId;
-  bool _isActive = true;
+  final bool _isActive = true;
 
   @override
   void initState() {

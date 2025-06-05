@@ -5,7 +5,6 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:taskova_shopkeeper/Model/api_config.dart';
-import 'package:taskova_shopkeeper/view/Job_edit.dart';
 import 'package:taskova_shopkeeper/view/bottom_nav.dart';
 import 'package:taskova_shopkeeper/view/Jobpost/instant_job_post.dart';
 import 'package:taskova_shopkeeper/view/Jobpost/schedulejob_post.dart';
