@@ -228,7 +228,7 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       _channel = WebSocketChannel.connect(
         Uri.parse(
-          'ws://taskova.co.uk:8091/ws/chat/$_chatRoomId/?token=$_authToken',
+          'ws://taskova.co.uk:8001/ws/chat/$_chatRoomId/?token=$_authToken',
         ),
       );
 

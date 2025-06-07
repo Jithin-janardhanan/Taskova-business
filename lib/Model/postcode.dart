@@ -27,6 +27,7 @@ class _PostcodeSearchWidgetState extends State<PostcodeSearchWidget> {
   List<Map<String, dynamic>> _addressSuggestions = [];
   Timer? _debounceTimer;
   late AppLanguage appLanguage;
+  bool _isUpdatingProgrammatically = false;
 
   // Define color scheme
   final Color primaryBlue = const Color(0xFF1A5DC1);
@@ -49,10 +50,16 @@ class _PostcodeSearchWidgetState extends State<PostcodeSearchWidget> {
       _postcodeController.dispose();
     }
     _debounceTimer?.cancel();
+    _isUpdatingProgrammatically = false; // Reset flag on dispose
     super.dispose();
   }
 
   void _onPostcodeChanged() {
+    // Don't trigger search if we're updating the field programmatically
+    if (_isUpdatingProgrammatically) {
+      return;
+    }
+
     if (_postcodeController.text.length >= 3) {
       if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
       _debounceTimer = Timer(const Duration(milliseconds: 500), () {
@@ -94,6 +101,8 @@ class _PostcodeSearchWidgetState extends State<PostcodeSearchWidget> {
               'address': address,
               'latitude': location.latitude,
               'longitude': location.longitude,
+              'postcode':
+                  placemark.postalCode ?? '', // Store individual postcode
             });
           }
         }
@@ -135,8 +144,22 @@ class _PostcodeSearchWidgetState extends State<PostcodeSearchWidget> {
   }
 
   void _selectAddress(Map<String, dynamic> suggestion) {
+    // Set flag to prevent triggering search when updating postcode
+    _isUpdatingProgrammatically = true;
+
+    // Update the postcode field with the full postcode from the selected address
+    String fullPostcode = suggestion['postcode'] ?? '';
+    if (fullPostcode.isNotEmpty) {
+      _postcodeController.text = fullPostcode;
+    }
+
     setState(() {
       _addressSuggestions = []; // Clear suggestions
+    });
+
+    // Reset flag after a brief delay to allow the field update to complete
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _isUpdatingProgrammatically = false;
     });
 
     widget.onAddressSelected(
@@ -176,6 +199,7 @@ class _PostcodeSearchWidgetState extends State<PostcodeSearchWidget> {
               'address': address,
               'latitude': location.latitude,
               'longitude': location.longitude,
+              'postcode': placemark.postalCode ?? '',
             });
           }
         }
@@ -303,6 +327,10 @@ class _PostcodeSearchWidgetState extends State<PostcodeSearchWidget> {
                   title: Text(
                     suggestion['address'],
                     style: const TextStyle(color: Color(0xFF0E4DA4)),
+                  ),
+                  subtitle: Text(
+                    'Postcode: ${suggestion['postcode']}',
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
                   ),
                   onTap: () => _selectAddress(suggestion),
                 );
