@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart' as appLanguage;
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskova_shopkeeper/Model/api_config.dart';
@@ -374,12 +375,23 @@ class _BusinessFetchAndEditPageState extends State<BusinessFetchAndEditPage> {
                       label: 'Contact Number',
                       prefixIcon: Icons.phone,
                       keyboardType: TextInputType.phone,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter contact number';
-                        }
-                        return null;
-                      },
+                       validator: (value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Number required';
+    }
+
+    final phone = value.replaceAll(RegExp(r'\D'), ''); // Remove all non-digits
+
+    // Valid UK mobile numbers: start with '07' (local) or '447' (international)
+    final isValidUK = (phone.startsWith('07') && phone.length == 11) ||
+                      (phone.startsWith('447') && phone.length == 12);
+
+    if (!isValidUK) {
+      return 'Enter a valid UK mobile number';
+    }
+
+    return null;
+  },
                     ),
                   ],
                 ),

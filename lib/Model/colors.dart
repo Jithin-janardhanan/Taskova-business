@@ -8,7 +8,7 @@ class AppColors {
   // Enhanced palette
   static const Color accentGreen = Color(0xFF10B981);      // Vibrant green for positive actions
   static const Color softMint = Color(0xFFECFDF5);         // Original accent color
-  static const Color warmOrange = Color(0xFFF97316);       // Warm orange for highlights
+      // Warm orange for highlights
   static const Color softPurple = Color(0xFFDDD6FE);       // Soft purple for variety
   static const Color darkText = Color(0xFF1F2937);         // Better than pure black for text
   static const Color lightGray = Color(0xFFF3F4F6);        // Background for cards

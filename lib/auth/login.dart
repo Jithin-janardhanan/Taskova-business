@@ -10,7 +10,7 @@ import 'package:taskova_shopkeeper/Model/profile_status.dart';
 import 'package:taskova_shopkeeper/Model/validator.dart';
 import 'package:taskova_shopkeeper/auth/forgot_password.dart';
 import 'package:taskova_shopkeeper/auth/google.dart';
-import 'package:taskova_shopkeeper/auth/profile_page.dart';
+import 'package:taskova_shopkeeper/auth/profile_filling.dart';
 import 'package:taskova_shopkeeper/language/language_selection_screen.dart';
 import 'package:taskova_shopkeeper/view/bottom_nav.dart';
 import 'package:taskova_shopkeeper/view/busines%20management/business_detial_filling.dart';
@@ -285,14 +285,10 @@ class _LoginState extends State<Login> {
                   ),
                   const SizedBox(height: 20),
                   // App name
-                  Text(
-                    appLanguage.get('app_name'),
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryBlue,
-                    ),
-                  ),
+                  Image.asset(
+  'assets/taskova-logo.png',
+  height: 50, // Adjust height as needed
+),
                   const SizedBox(height: 8),
                   // Tagline
                   Text(

@@ -415,15 +415,22 @@ class _ProfileDetailFillingPageState extends State<ProfileDetailFillingPage> {
                   // Name field
                   TextFormField(
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
+                      if (value == null || value.trim().isEmpty) {
                         return appLanguage.get('name_required');
+                      }
+                      String name = value.trim();
+                      if (name.length < 2) {
+                        return 'Name must be at least 2 characters';
+                      }
+                      if (!RegExp(r"^[a-zA-Z\s]+$").hasMatch(name)) {
+                        return 'Name can only contain letters and spaces';
                       }
                       return null;
                     },
                     controller: _nameController,
                     decoration: InputDecoration(
                       labelText: appLanguage.get('name'),
-                       hintText: appLanguage.get('enter_full_name'),
+                      hintText: appLanguage.get('enter_full_name'),
                       prefixIcon: const Icon(
                         Icons.person_outline,
                         color: AppColors.secondaryBlue,
@@ -455,40 +462,44 @@ class _ProfileDetailFillingPageState extends State<ProfileDetailFillingPage> {
 
                   // Phone number field
                   TextFormField(
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return appLanguage.get('phone_required');
-                      }
-                      // Basic UK phone validation - check length and starts with valid digits
-                      String cleanPhone = value.replaceAll(
-                        RegExp(r'[^\d]'),
-                        '',
-                      );
-                      if (cleanPhone.length < 10 || cleanPhone.length > 11) {
-                        return 'Enter a valid UK phone number';
-                      }
-                      if (!cleanPhone.startsWith('0') &&
-                          !cleanPhone.startsWith('44')) {
-                        return 'Enter a valid UK phone number';
-                      }
-                      return null;
-                    },
+                     validator: (value) {
+    if (value == null || value.trim().isEmpty) {
+      return appLanguage.get('phone_required');
+    }
+
+    final phone = value.replaceAll(RegExp(r'\D'), ''); // Remove all non-digits
+
+    // Valid UK mobile numbers: start with '07' (local) or '447' (international)
+    final isValidUK = (phone.startsWith('07') && phone.length == 11) ||
+                      (phone.startsWith('447') && phone.length == 12);
+
+    if (!isValidUK) {
+      return 'Enter a valid UK mobile number';
+    }
+
+    return null;
+  },
+
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
                     decoration: InputDecoration(
                       labelText: appLanguage.get('phone'),
                       hintText: '07123456789',
+                      hintStyle: TextStyle(
+                        color: Colors.grey.withOpacity(0.6), // Set opacity here
+                        fontSize: 14,
+                      ),
                       prefixIcon: Container(
                         padding: const EdgeInsets.all(12),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text('🇬🇧', style: TextStyle(fontSize: 20)),
-                            const SizedBox(width: 8),
                             const Icon(
                               Icons.phone_outlined,
                               color: AppColors.secondaryBlue,
                             ),
+                            const SizedBox(width: 8),
+                            Text('🇬🇧', style: TextStyle(fontSize: 20)),
                           ],
                         ),
                       ),

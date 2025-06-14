@@ -166,11 +166,16 @@
 //     );
 //   }
 // }
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:taskova_shopkeeper/Model/colors.dart';
+import 'package:taskova_shopkeeper/view/Jobpost/expired_jobs.dart';
 import 'package:taskova_shopkeeper/view/Jobpost/instant_job_post.dart';
+import 'package:taskova_shopkeeper/view/Jobpost/job_manage.dart';
 import 'package:taskova_shopkeeper/view/Jobpost/schedulejob_post.dart';
-import 'package:taskova_shopkeeper/view/mypost.dart';
+import 'package:taskova_shopkeeper/view/Jobpost/mypost.dart';
+import 'package:taskova_shopkeeper/view/verification.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -232,7 +237,7 @@ class _DashboardState extends State<Dashboard> {
           if (Navigator.of(context).canPop()) {
             Navigator.of(context).pop();
           } else {
-            SystemNavigator.pop();
+            await SystemChannels.platform.invokeMethod('SystemNavigator.pop');
           }
         }
       },
@@ -240,7 +245,7 @@ class _DashboardState extends State<Dashboard> {
         backgroundColor: Colors.grey[50],
         appBar: AppBar(
           elevation: 0,
-          backgroundColor: const Color.fromARGB(255, 63, 105, 230),
+          backgroundColor: AppColors.primaryBlue,
           title: Center(
             child: Text(
               "Taskova",
@@ -251,15 +256,6 @@ class _DashboardState extends State<Dashboard> {
               ),
             ),
           ),
-          // actions: [
-          //   Container(
-          //     margin: EdgeInsets.only(right: 16),
-          //     child: CircleAvatar(
-          //       backgroundColor: Colors.orange.withOpacity(0.1),
-          //       child: Icon(Icons.person, color: Colors.orange),
-          //     ),
-          //   ),
-          // ],
         ),
         body: RefreshIndicator(
           onRefresh: () async {
@@ -379,7 +375,7 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Widget _buildStatCard(
-    String title, 
+    String title,
     String value,
     IconData icon,
     Color color,
@@ -446,9 +442,7 @@ class _DashboardState extends State<Dashboard> {
                 () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => const InstatJobPost(),
-                    ),
+                    MaterialPageRoute(builder: (context) => InstatJobPost()),
                   );
                 },
               ),
@@ -484,7 +478,9 @@ class _DashboardState extends State<Dashboard> {
                 () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => MyJobpost()),
+                    MaterialPageRoute(
+                      builder: (context) => JobManagementPage(),
+                    ),
                   );
                 },
               ),
@@ -501,6 +497,10 @@ class _DashboardState extends State<Dashboard> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text("Analytics coming soon!")),
                   );
+                  //                   Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(builder: (context) => ExpiredJobsPage()),
+                  // );
                 },
               ),
             ),
@@ -584,7 +584,7 @@ class _DashboardState extends State<Dashboard> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => MyJobpost()),
+                  MaterialPageRoute(builder: (context) => JobManagementPage()),
                 );
               },
             ),
@@ -603,33 +603,6 @@ class _DashboardState extends State<Dashboard> {
               ),
             ],
           ),
-          // child: Column(
-          //   children: [
-          //     _buildActivityItem(
-          //       "New application received",
-          //       "John Doe applied for delivery job",
-          //       Icons.person_add,
-          //       Colors.green,
-          //       "2 min ago",
-          //     ),
-          //     Divider(height: 1),
-          //     _buildActivityItem(
-          //       "Job post published",
-          //       "Evening delivery job is now live",
-          //       Icons.publish,
-          //       Colors.blue,
-          //       "1 hour ago",
-          //     ),
-          //     Divider(height: 1),
-          //     _buildActivityItem(
-          //       "Driver assigned",
-          //       "Mike Smith assigned to lunch delivery",
-          //       Icons.assignment_ind,
-          //       Colors.orange,
-          //       "3 hours ago",
-          //     ),
-          //   ],
-          // ),
         ),
       ],
     );

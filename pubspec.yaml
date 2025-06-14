@@ -90,6 +90,8 @@ flutter:
       - assets/success.json
       - assets/loader.json
       - assets/logout.png
+      - assets/taskova-logo.png
+      - assets/toskova_icon.jpg
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

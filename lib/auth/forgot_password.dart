@@ -1,5 +1,3 @@
-
-
 // // This is a placeholder for the OTP Verification screen
 // // You would implement this in a separate file
 import 'dart:convert';

@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'package:taskova_shopkeeper/Model/api_config.dart';
 import 'package:taskova_shopkeeper/Model/profile_status.dart';
-import 'package:taskova_shopkeeper/auth/profile_page.dart';
+import 'package:taskova_shopkeeper/auth/profile_filling.dart';
 import 'package:taskova_shopkeeper/auth/registration.dart';
 import 'package:taskova_shopkeeper/view/bottom_nav.dart';
 import 'package:taskova_shopkeeper/view/busines%20management/business_detial_filling.dart';

@@ -423,24 +423,23 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
                     const SizedBox(height: 20),
                     // Contact Number field
                     TextFormField(
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return appLanguage.get('phone_required');
-                        }
-                        // Basic UK phone validation - check length and starts with valid digits
-                        String cleanPhone = value.replaceAll(
-                          RegExp(r'[^\d]'),
-                          '',
-                        );
-                        if (cleanPhone.length < 10 || cleanPhone.length > 11) {
-                          return 'Enter a valid UK phone number';
-                        }
-                        if (!cleanPhone.startsWith('0') &&
-                            !cleanPhone.startsWith('44')) {
-                          return 'Enter a valid UK phone number';
-                        }
-                        return null;
-                      },
+                       validator: (value) {
+    if (value == null || value.trim().isEmpty) {
+      return appLanguage.get('phone_required');
+    }
+
+    final phone = value.replaceAll(RegExp(r'\D'), ''); // Remove all non-digits
+
+    // Valid UK mobile numbers: start with '07' (local) or '447' (international)
+    final isValidUK = (phone.startsWith('07') && phone.length == 11) ||
+                      (phone.startsWith('447') && phone.length == 12);
+
+    if (!isValidUK) {
+      return 'Enter a valid UK mobile number';
+    }
+
+    return null;
+  },
                       controller: _contactNumberController,
                       keyboardType: TextInputType.phone,
                       decoration: InputDecoration(
@@ -539,39 +538,7 @@ class _BusinessFormPageState extends State<BusinessFormPage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    // Is Active switch
-                    // Container(
-                    //   padding: const EdgeInsets.symmetric(vertical: 5),
-                    //   height: 60,
-                    //   decoration: BoxDecoration(
-                    //     color: Colors.grey[50],
-                    //     borderRadius: BorderRadius.circular(12),
-                    //     border: Border.all(
-                    //       color: AppColors.lightBlue,
-                    //       width: 1,
-                    //     ),
-                    //   ),
-                    //   child: SwitchListTile(
-                    //     title: Text(
-                    //       appLanguage.get('active') ?? 'Active',
-                    //       style: const TextStyle(
-                    //         fontSize: 14,
-                    //         color: AppColors.secondaryBlue,
-                    //       ),
-                    //     ),
-                    //     value: _isActive,
-                    //     onChanged: (bool value) {
-                    //       setState(() {
-                    //         _isActive = value;
-                    //       });
-                    //     },
-                    //     activeColor: AppColors.primaryBlue,
-                    //     contentPadding: const EdgeInsets.symmetric(
-                    //       horizontal: 16,
-                    //     ),
-                    //   ),
-                    // ),
-                    // const SizedBox(height: 40),
+                    
                     // Submit button
                     SizedBox(
                       width: double.infinity,

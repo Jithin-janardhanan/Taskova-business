@@ -498,15 +498,23 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                               hint: 'Enter your phone number',
                               icon: Icons.phone,
                               keyboardType: TextInputType.phone,
-                              validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return null; // Phone is optional
-                                }
-                                if (value.trim().length < 6) {
-                                  return 'Please enter a valid phone number';
-                                }
-                                return null;
-                              },
+                                validator: (value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Number required';
+    }
+
+    final phone = value.replaceAll(RegExp(r'\D'), ''); // Remove all non-digits
+
+    // Valid UK mobile numbers: start with '07' (local) or '447' (international)
+    final isValidUK = (phone.startsWith('07') && phone.length == 11) ||
+                      (phone.startsWith('447') && phone.length == 12);
+
+    if (!isValidUK) {
+      return 'Enter a valid UK mobile number';
+    }
+
+    return null;
+  },
                             ),
                           ],
                         ),

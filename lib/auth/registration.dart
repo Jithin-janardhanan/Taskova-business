@@ -5,7 +5,6 @@ import 'package:taskova_shopkeeper/Model/colors.dart';
 import 'package:taskova_shopkeeper/Model/otp.dart';
 import 'package:taskova_shopkeeper/language/language_provider.dart';
 
-
 import 'login.dart';
 import '../Model/validator.dart';
 import 'package:http/http.dart' as http;
@@ -51,11 +50,12 @@ class _RegistrationState extends State<Registration> {
             body: jsonEncode({
               "email": _emailController.text,
               "password": _passwordController.text,
-              "role": "SHOPKEEPER"
+              "role": "SHOPKEEPER",
             }),
           )
-          .timeout(const Duration(
-              seconds: 10)); // Add timeout for better error handling
+          .timeout(
+            const Duration(seconds: 10),
+          ); // Add timeout for better error handling
 
       if (response.statusCode == 201) {
         print("Success: ${response.body}");
@@ -110,13 +110,13 @@ class _RegistrationState extends State<Registration> {
                     decoration: BoxDecoration(
                       color: AppColors.lightBlue,
                       borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Icon(
-                      Icons.app_registration_rounded,
-                      size: 60,
-                      color: AppColors.primaryBlue,
+                      image: const DecorationImage(
+                        image: AssetImage('assets/toskova_icon.jpg'),
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
+
                   const SizedBox(height: 20),
                   // App name
                   Text(
@@ -131,10 +131,7 @@ class _RegistrationState extends State<Registration> {
                   // Tagline
                   Text(
                     appLanguage.get('create_an_account'),
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                   const SizedBox(height: 40),
 
@@ -158,17 +155,23 @@ class _RegistrationState extends State<Registration> {
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(
-                            color: Color.fromARGB(255, 10, 11, 11), width: 1),
+                          color: Color.fromARGB(255, 10, 11, 11),
+                          width: 1,
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(
-                            color: AppColors.primaryBlue, width: 2),
+                          color: AppColors.primaryBlue,
+                          width: 2,
+                        ),
                       ),
                       errorBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide:
-                            const BorderSide(color: Colors.red, width: 1),
+                        borderSide: const BorderSide(
+                          color: Colors.red,
+                          width: 1,
+                        ),
                       ),
                     ),
                   ),
@@ -206,17 +209,23 @@ class _RegistrationState extends State<Registration> {
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(
-                            color: Color.fromARGB(255, 10, 11, 11), width: 1),
+                          color: Color.fromARGB(255, 10, 11, 11),
+                          width: 1,
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(
-                            color: AppColors.primaryBlue, width: 2),
+                          color: AppColors.primaryBlue,
+                          width: 2,
+                        ),
                       ),
                       errorBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide:
-                            const BorderSide(color: Colors.red, width: 1),
+                        borderSide: const BorderSide(
+                          color: Colors.red,
+                          width: 1,
+                        ),
                       ),
                     ),
                   ),
@@ -249,17 +258,23 @@ class _RegistrationState extends State<Registration> {
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(
-                            color: Color.fromARGB(255, 10, 11, 11), width: 1),
+                          color: Color.fromARGB(255, 10, 11, 11),
+                          width: 1,
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(
-                            color: AppColors.primaryBlue, width: 2),
+                          color: AppColors.primaryBlue,
+                          width: 2,
+                        ),
                       ),
                       errorBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide:
-                            const BorderSide(color: Colors.red, width: 1),
+                        borderSide: const BorderSide(
+                          color: Colors.red,
+                          width: 1,
+                        ),
                       ),
                     ),
                   ),
@@ -281,14 +296,15 @@ class _RegistrationState extends State<Registration> {
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
-                      onPressed: _isLoading
-                          ? null
-                          : () {
-                              if (_formKey.currentState!.validate()) {
-                                // Registration logic
-                                registerUser();
-                              }
-                            },
+                      onPressed:
+                          _isLoading
+                              ? null
+                              : () {
+                                if (_formKey.currentState!.validate()) {
+                                  // Registration logic
+                                  registerUser();
+                                }
+                              },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryBlue,
                         foregroundColor: Colors.white,
@@ -297,22 +313,23 @@ class _RegistrationState extends State<Registration> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: _isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
+                      child:
+                          _isLoading
+                              ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : Text(
+                                appLanguage.get('Create_account'),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            )
-                          : Text(
-                              appLanguage.get('Create_account'),
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
                     ),
                   ),
                   const SizedBox(height: 30),
