@@ -1376,6 +1376,7 @@ class _JobPostDetailsPageState extends State<JobPostDetailsPage> {
   String _selectedFilter = 'All';
   double _maxDistance = 50.0;
   double _minRating = 0.0;
+  bool _isFilterVisible = false;
 
   // Blue theme colors
   static const Color primaryBlue = Color(0xFF1565C0);
@@ -1516,10 +1517,10 @@ class _JobPostDetailsPageState extends State<JobPostDetailsPage> {
   void _applyFilters() {
     List<dynamic> filtered = List.from(jobRequests);
 
-    if (_selectedFilter == 'Hired') {
-      filtered = filtered.where((req) => req['is_accepted'] == true).toList();
+    if (_selectedFilter == 'Accepted') {
+      filtered = filtered.where((req) => req['status'] == 'accepted').toList();
     } else if (_selectedFilter == 'Pending') {
-      filtered = filtered.where((req) => req['is_accepted'] == false).toList();
+      filtered = filtered.where((req) => req['status'] == 'pending').toList();
     }
 
     filtered =
@@ -1557,10 +1558,31 @@ class _JobPostDetailsPageState extends State<JobPostDetailsPage> {
         body: json.encode({}),
       );
       if (response.statusCode == 200) {
+        await fetchJobDetails();
         await fetchJobRequests();
       }
     } catch (e) {
       print('Hire Error: $e');
+    }
+  }
+
+  Future<void> _cancelJobRequest(int jobRequestId) async {
+    final url = Uri.parse(
+      '$baseUrl/api/job-request/$jobRequestId/cancel-by-shopkeeper/',
+    );
+    try {
+      final response = await http.post(
+        url,
+        headers: _getAuthHeaders(),
+        body: json.encode({}),
+      );
+      if (response.statusCode == 200) {
+        await fetchJobRequests();
+      } else {
+        print('Cancel Error: ${response.reasonPhrase}');
+      }
+    } catch (e) {
+      print('Cancel Exception: $e');
     }
   }
 
@@ -1584,7 +1606,7 @@ class _JobPostDetailsPageState extends State<JobPostDetailsPage> {
           ),
           const SizedBox(width: 2),
           Text(
-            rating > 0 ? rating.toStringAsFixed(1) : 'N/A',
+            rating > 0 ? rating.toStringAsFixed(1) : 'No rating',
             style: TextStyle(
               color: rating > 0 ? darkBlue : Colors.grey,
               fontWeight: FontWeight.w600,
@@ -1838,9 +1860,11 @@ class _JobPostDetailsPageState extends State<JobPostDetailsPage> {
   }
 
   Widget _buildFilterSection() {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      height: _isFilterVisible ? null : 0,
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      padding: _isFilterVisible ? const EdgeInsets.all(16) : EdgeInsets.zero,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -1853,131 +1877,155 @@ class _JobPostDetailsPageState extends State<JobPostDetailsPage> {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.filter_list, color: primaryBlue, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                'Filters',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: darkBlue,
+      child:
+          _isFilterVisible
+              ? SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.filter_list,
+                              color: primaryBlue,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Filters',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: darkBlue,
+                              ),
+                            ),
+                          ],
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.close, color: primaryBlue, size: 20),
+                          onPressed: () {
+                            setState(() {
+                              _isFilterVisible = false;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Text(
+                          'Status: ',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: darkBlue,
+                            fontSize: 14,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: backgroundBlue,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: DropdownButton<String>(
+                            value: _selectedFilter,
+                            underline: const SizedBox(),
+                            style: TextStyle(color: primaryBlue, fontSize: 14),
+                            items:
+                                ['All', 'Accepted', 'Pending'].map((
+                                  String value,
+                                ) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value),
+                                  );
+                                }).toList(),
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                _selectedFilter = newValue!;
+                                _applyFilters();
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Max Distance: ${_maxDistance.toInt()} miles',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: darkBlue,
+                        fontSize: 14,
+                      ),
+                    ),
+                    SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: primaryBlue,
+                        inactiveTrackColor: accentBlue.withOpacity(0.3),
+                        thumbColor: primaryBlue,
+                        overlayColor: primaryBlue.withOpacity(0.2),
+                      ),
+                      child: Slider(
+                        value: _maxDistance,
+                        min: 1,
+                        max: 100,
+                        divisions: 99,
+                        onChanged: (double value) {
+                          setState(() {
+                            _maxDistance = value;
+                            _applyFilters();
+                          });
+                        },
+                      ),
+                    ),
+                    Text(
+                      'Min Rating: ${_minRating.toStringAsFixed(1)}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: darkBlue,
+                        fontSize: 14,
+                      ),
+                    ),
+                    SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: primaryBlue,
+                        inactiveTrackColor: accentBlue.withOpacity(0.3),
+                        thumbColor: primaryBlue,
+                        overlayColor: primaryBlue.withOpacity(0.2),
+                      ),
+                      child: Slider(
+                        value: _minRating,
+                        min: 0,
+                        max: 5,
+                        divisions: 50,
+                        onChanged: (double value) {
+                          setState(() {
+                            _minRating = value;
+                            _applyFilters();
+                          });
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          Row(
-            children: [
-              Text(
-                'Status: ',
-                style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  color: darkBlue,
-                  fontSize: 14,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: backgroundBlue,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: DropdownButton<String>(
-                  value: _selectedFilter,
-                  underline: const SizedBox(),
-                  style: TextStyle(color: primaryBlue, fontSize: 14),
-                  items:
-                      ['All', 'Hired', 'Pending'].map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      _selectedFilter = newValue!;
-                      _applyFilters();
-                    });
-                  },
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          Text(
-            'Max Distance: ${_maxDistance.toInt()} miles',
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              color: darkBlue,
-              fontSize: 14,
-            ),
-          ),
-          SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              activeTrackColor: primaryBlue,
-              inactiveTrackColor: accentBlue.withOpacity(0.3),
-              thumbColor: primaryBlue,
-              overlayColor: primaryBlue.withOpacity(0.2),
-            ),
-            child: Slider(
-              value: _maxDistance,
-              min: 1,
-              max: 100,
-              divisions: 99,
-              onChanged: (double value) {
-                setState(() {
-                  _maxDistance = value;
-                  _applyFilters();
-                });
-              },
-            ),
-          ),
-
-          Text(
-            'Min Rating: ${_minRating.toStringAsFixed(1)}',
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              color: darkBlue,
-              fontSize: 14,
-            ),
-          ),
-          SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              activeTrackColor: primaryBlue,
-              inactiveTrackColor: accentBlue.withOpacity(0.3),
-              thumbColor: primaryBlue,
-              overlayColor: primaryBlue.withOpacity(0.2),
-            ),
-            child: Slider(
-              value: _minRating,
-              min: 0,
-              max: 5,
-              divisions: 50,
-              onChanged: (double value) {
-                setState(() {
-                  _minRating = value;
-                  _applyFilters();
-                });
-              },
-            ),
-          ),
-        ],
-      ),
+              )
+              : const SizedBox.shrink(),
     );
   }
 
   Widget _buildDriverCard(Map<String, dynamic> req) {
-    final bool isAccepted = req['is_accepted'];
+    final bool isAccepted = req['status'] == 'accepted';
+    final bool isCancelled =
+        req['status'] == 'cancelled_by_shopkeeper' ||
+        req['status'] == 'cancelled_by_driver';
     final int jobRequestId = req['job_request_id'];
     final int driverId = req['driver_id'];
     final String driverName = req['driver_name'] ?? 'Unknown Driver';
@@ -1995,6 +2043,8 @@ class _JobPostDetailsPageState extends State<JobPostDetailsPage> {
           color:
               isAccepted
                   ? Colors.green.withOpacity(0.3)
+                  : isCancelled
+                  ? Colors.red.withOpacity(0.3)
                   : accentBlue.withOpacity(0.3),
         ),
         boxShadow: [
@@ -2018,12 +2068,23 @@ class _JobPostDetailsPageState extends State<JobPostDetailsPage> {
                     color:
                         isAccepted
                             ? Colors.green.withOpacity(0.1)
+                            : isCancelled
+                            ? Colors.red.withOpacity(0.1)
                             : primaryBlue.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    isAccepted ? Icons.check_circle : Icons.person,
-                    color: isAccepted ? Colors.green : primaryBlue,
+                    isAccepted
+                        ? Icons.check_circle
+                        : isCancelled
+                        ? Icons.cancel
+                        : Icons.person,
+                    color:
+                        isAccepted
+                            ? Colors.green
+                            : isCancelled
+                            ? Colors.red
+                            : primaryBlue,
                     size: 20,
                   ),
                 ),
@@ -2065,11 +2126,31 @@ class _JobPostDetailsPageState extends State<JobPostDetailsPage> {
                         fontSize: 11,
                       ),
                     ),
+                  )
+                else if (isCancelled)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      req['status'] == 'cancelled_by_shopkeeper'
+                          ? 'CANCELLED BY YOU'
+                          : 'CANCELLED BY DRIVER',
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                      ),
+                    ),
                   ),
               ],
             ),
             const SizedBox(height: 12),
-
             Row(
               children: [
                 _buildRatingDisplay(averageRating),
@@ -2078,7 +2159,6 @@ class _JobPostDetailsPageState extends State<JobPostDetailsPage> {
               ],
             ),
             const SizedBox(height: 8),
-
             Text(
               preferredAddress,
               style: TextStyle(fontSize: 13, color: Colors.grey[700]),
@@ -2086,51 +2166,73 @@ class _JobPostDetailsPageState extends State<JobPostDetailsPage> {
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 12),
-
-            if (isAccepted)
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) => ChatScreen(jobRequestId: jobRequestId),
+            Row(
+              children: [
+                if (isAccepted)
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) =>
+                                    ChatScreen(jobRequestId: jobRequestId),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.chat, size: 18),
+                      label: const Text('Chat'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryBlue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
-                    );
-                  },
-                  icon: const Icon(Icons.chat, size: 18),
-                  label: const Text('Start Chat'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryBlue,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  )
+                else if (!isCancelled)
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        await _hireDriver(jobRequestId);
+                      },
+                      icon: const Icon(Icons.work, size: 18),
+                      label: const Text('Hire Driver'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryBlue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              )
-            else
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () async {
-                    await _hireDriver(jobRequestId);
-                  },
-                  icon: const Icon(Icons.work, size: 18),
-                  label: const Text('Hire Driver'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryBlue,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                if (!isCancelled) ...[
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        await _cancelJobRequest(jobRequestId);
+                      },
+                      icon: const Icon(Icons.cancel, size: 18),
+                      label: const Text('Cancel'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
+                ],
+              ],
+            ),
           ],
         ),
       ),
@@ -2149,6 +2251,18 @@ class _JobPostDetailsPageState extends State<JobPostDetailsPage> {
         backgroundColor: primaryBlue,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            _isFilterVisible = !_isFilterVisible;
+          });
+        },
+        backgroundColor: primaryBlue,
+        child: Icon(
+          _isFilterVisible ? Icons.filter_alt_off : Icons.filter_alt,
+          color: Colors.white,
+        ),
       ),
       body:
           _isLoading
@@ -2177,8 +2291,7 @@ class _JobPostDetailsPageState extends State<JobPostDetailsPage> {
                   children: [
                     _buildInfoCard(),
                     _buildBusinessCard(),
-                    _buildFilterSection(),
-
+                    if (_isFilterVisible) _buildFilterSection(),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 4,
@@ -2216,7 +2329,6 @@ class _JobPostDetailsPageState extends State<JobPostDetailsPage> {
                         ],
                       ),
                     ),
-
                     if (filteredJobRequests.isEmpty)
                       Container(
                         width: double.infinity,
@@ -2244,9 +2356,9 @@ class _JobPostDetailsPageState extends State<JobPostDetailsPage> {
                         ),
                       )
                     else
-                      ...filteredJobRequests
-                          .map((req) => _buildDriverCard(req))
-                          ,
+                      ...filteredJobRequests.map(
+                        (req) => _buildDriverCard(req),
+                      ),
                   ],
                 ),
               ),

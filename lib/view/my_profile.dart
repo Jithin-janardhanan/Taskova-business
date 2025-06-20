@@ -182,7 +182,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   // navigation to profile edit page
-  void _navigateToEditProfile() {
+  void _navigateToEditProfile() { 
     Navigator.push(
       context,
       MaterialPageRoute(
