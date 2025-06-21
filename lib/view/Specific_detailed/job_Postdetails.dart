@@ -204,7 +204,7 @@ class _JobPostDetailsPageState extends State<JobPostDetailsPage>
                               DriverListPage(
                                 jobId: widget.jobId,
                                 authToken: _authToken!,
-                                
+                                businessID: jobData!['business_detail']?['id']?.toint(),
                                 businessLatitude: jobData!['business_detail']?['latitude']?.toDouble(),
                                 businessLongitude: jobData!['business_detail']?['longitude']?.toDouble(),
                               ),
