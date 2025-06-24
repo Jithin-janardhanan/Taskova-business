@@ -1,3 +1,5 @@
+
+
 class Driver {
   final int id;
   final String name;
@@ -18,9 +20,8 @@ class Driver {
     this.profilePicture,
     this.preferredAddress,
     required this.drivingDuration,
-     required this.latitude,
+    required this.latitude,
     required this.longitude,
-    
   });
 
   factory Driver.fromJson(Map<String, dynamic> json) {

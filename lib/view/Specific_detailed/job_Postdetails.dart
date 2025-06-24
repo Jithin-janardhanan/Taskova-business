@@ -76,7 +76,8 @@ class _JobPostDetailsPageState extends State<JobPostDetailsPage>
         });
       } else {
         setState(() {
-          _errorMessage = 'Failed to load job details. Status code: ${response.statusCode}';
+          _errorMessage =
+              'Failed to load job details. Status code: ${response.statusCode}';
           _isLoading = false;
         });
       }
@@ -91,128 +92,149 @@ class _JobPostDetailsPageState extends State<JobPostDetailsPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Job Post Details'),
-      ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : _errorMessage != null
+      appBar: AppBar(title: Text('Job Post Details')),
+      body:
+          _isLoading
+              ? Center(child: CircularProgressIndicator())
+              : _errorMessage != null
               ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Text(
-                      _errorMessage!,
-                      style: TextStyle(color: Colors.red, fontSize: 16),
-                      textAlign: TextAlign.center,
-                    ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Text(
+                    _errorMessage!,
+                    style: TextStyle(color: Colors.red, fontSize: 16),
+                    textAlign: TextAlign.center,
                   ),
-                )
+                ),
+              )
               : jobData == null
-                  ? Center(child: Text("Failed to load data"))
-                  : Column(
+              ? Center(child: Text("Failed to load data"))
+              : Column(
+                children: [
+                  // Job Details Section (Always visible at top)
+                  Container(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Job Details Section (Always visible at top)
-                        Container(
-                          padding: EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Job Info Card
-                              Card(
-                                child: Padding(
-                                  padding: EdgeInsets.all(16),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        jobData!['title'],
-                                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                                      ),
-                                      SizedBox(height: 8),
-                                      Text(jobData!['description']),
-                                      SizedBox(height: 12),
-                                      Text('Hourly Rate: \$${jobData!['hourly_rate']}/hr'),
-                                      Text('Per Delivery: \$${jobData!['per_delivery_rate']}/del'),
-                                      Text('Time: ${jobData!['start_time']} - ${jobData!['end_time']}'),
-                                    ],
+                        // Job Info Card
+                        Card(
+                          child: Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  jobData!['title'],
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                              ),
-                              SizedBox(height: 12),
+                                SizedBox(height: 8),
+                                Text(jobData!['description']),
+                                SizedBox(height: 12),
+                                Text(
+                                  'Hourly Rate: \$${jobData!['hourly_rate']}/hr',
+                                ),
+                                Text(
+                                  'Per Delivery: \$${jobData!['per_delivery_rate']}/del',
+                                ),
+                                Text(
+                                  'Time: ${jobData!['start_time']} - ${jobData!['end_time']}',
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 12),
 
-                              // Business Card
-                              Card(
-                                child: Padding(
-                                  padding: EdgeInsets.all(16),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Business: ${jobData!['business_detail']?['name'] ?? 'Unknown Business'}',
-                                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                      ),
-                                      SizedBox(height: 4),
-                                      Text('Address: ${jobData!['business_detail']?['address'] ?? 'Address not available'}'),
-                                      if (jobData!['complimentary_benefits'] != null &&
-                                          (jobData!['complimentary_benefits'] as List).isNotEmpty) ...[
-                                        SizedBox(height: 8),
-                                        Text('Benefits: ${(jobData!['complimentary_benefits'] as List).join(', ')}'),
-                                      ],
-                                    ],
+                        // Business Card
+                        Card(
+                          child: Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Business: ${jobData!['business_detail']?['name'] ?? 'Unknown Business'}',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // Tab Section
-                        Container(
-                          color: Theme.of(context).scaffoldBackgroundColor,
-                          child: TabBar(
-                            controller: _tabController,
-                            labelColor: Theme.of(context).primaryColor,
-                            unselectedLabelColor: Colors.grey,
-                            indicatorColor: Theme.of(context).primaryColor,
-                            tabs: [
-                              Tab(
-                                icon: Icon(Icons.work),
-                                text: 'Applied Jobs',
-                              ),
-                              Tab(
-                                icon: Icon(Icons.people),
-                                text: 'Driver List',
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // Tab Content
-                        Expanded(
-                          child: TabBarView(
-                            controller: _tabController,
-                            children: [
-                              // Applied Jobs Tab
-                              AppliedJobsTab(
-                                jobId: widget.jobId,
-                                authToken: _authToken!,
-                                baseUrl: baseUrl,
-                                businessLatitude: jobData!['business_detail']?['latitude']?.toDouble(),
-                                businessLongitude: jobData!['business_detail']?['longitude']?.toDouble(),
-                              ),
-                              // Driver List Tab
-                              DriverListPage(
-                                jobId: widget.jobId,
-                                authToken: _authToken!,
-                                businessID: jobData!['business_detail']?['id']?.toint(),
-                                businessLatitude: jobData!['business_detail']?['latitude']?.toDouble(),
-                                businessLongitude: jobData!['business_detail']?['longitude']?.toDouble(),
-                              ),
-                            ],
+                                SizedBox(height: 4),
+                                Text(
+                                  'Address: ${jobData!['business_detail']?['address'] ?? 'Address not available'}',
+                                ),
+                                if (jobData!['complimentary_benefits'] !=
+                                        null &&
+                                    (jobData!['complimentary_benefits'] as List)
+                                        .isNotEmpty) ...[
+                                  SizedBox(height: 8),
+                                  Text(
+                                    'Benefits: ${(jobData!['complimentary_benefits'] as List).join(', ')}',
+                                  ),
+                                ],
+                              ],
+                            ),
                           ),
                         ),
                       ],
                     ),
+                  ),
+
+                  // Tab Section
+                  Container(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    child: TabBar(
+                      controller: _tabController,
+                      labelColor: Theme.of(context).primaryColor,
+                      unselectedLabelColor: Colors.grey,
+                      indicatorColor: Theme.of(context).primaryColor,
+                      tabs: [
+                        Tab(icon: Icon(Icons.work), text: 'Applied Jobs'),
+                        Tab(icon: Icon(Icons.people), text: 'Driver List'),
+                      ],
+                    ),
+                  ),
+
+                  // Tab Content
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        // Applied Jobs Tab
+                        AppliedJobsTab(
+                          jobId: widget.jobId,
+                          authToken: _authToken!,
+                          baseUrl: baseUrl,
+                          businessLatitude:
+                              jobData!['business_detail']?['latitude']
+                                  ?.toDouble(),
+                          businessLongitude:
+                              jobData!['business_detail']?['longitude']
+                                  ?.toDouble(),
+                        ),
+                        // Driver List Tab
+                        DriverListPage(
+                          jobId: widget.jobId,
+                          authToken: _authToken!,
+                          businessID:
+                              jobData!['business_detail']?['id']?.toInt(),
+                          businessLatitude:
+                              jobData!['business_detail']?['latitude']
+                                  ?.toDouble(),
+                          businessLongitude:
+                              jobData!['business_detail']?['longitude']
+                                  ?.toDouble(),
+                                  subscription:jobData!['subscription_plan']?['type']?.toString(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
     );
   }
 }
